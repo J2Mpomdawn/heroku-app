@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理</title>
+    <link rel="icon" href="static/img/favicon.ico">
+  </head>
+  <body>
+    <header>
+      <a href="/">
+        <h1>このサイトの名前(不○議.net)みたいなやつ</h1>
+      </a>
+    </header>
+      <div id="loading" style="position:fixed;top: 0;width:100vw;height:100vh;background-color:black;z-index:1">
+        <img src="/static/img/hinata0.gif" style="position:absolute;width:50%;right:10px;bottom:10px">
+      </div>
+      <h2>TABLES</h2>
+      <input type="button" id="looktables" value="table一覧">
+      <div id="tables"></div>
+      <h2>RECORDS</h2>
+      <input type="text" id="tablename" placeholder="from">
+      <input type="button" id="lookrecords" value="record一覧">
+      <input type="text" id="select" placeholder="select" style="display:block;margin-bottom:2px;">
+      <input type="text" id="where" placeholder="where" style="display:block;margin-bottom:4px;">
+      <div id="records"></div>
+      <h2>SOMETHING</h2>
+    <script async defer src="/static/js/control.js"></script>
+  </body>
+</html>

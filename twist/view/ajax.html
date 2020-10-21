@@ -1,0 +1,11 @@
+<h1>サーバーからの返信</h1>
+<p id="ppp">{{.tweet}}</p>
+<div class="graph">
+  <svg>
+    <g>
+      <path stroke="#e74c3c" stroke-width="2" fill="none" d={{.coord}} stroke-linecap="round" stroke-linejoin="round"/>
+      <path stroke="rgba(15,70,30,1)" stroke-width="2" fill="none" d="M0 150 L75 {{.tweet}} L150 150" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </svg>
+</div>
+<input type="button" id="bb" value="btn">

@@ -1,0 +1,264 @@
+.memo {
+  width: auto;
+  background-color: gray;
+  color: white;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  overflow-y: scroll;
+  /*ミリオンカラー*/
+  background-color: rgba(255, 195, 11, 0.01);
+}
+
+header {
+  /*なんかの画像を背景にしたい*/
+  background-color: rgba(123,231,132,0.7);
+}
+
+main {
+  /* background-color: rgba(0,200,0,0.5); */
+}
+
+h1, #links h2, #links p {
+  display: inline-block;
+  margin-bottom: 0
+}
+
+h1 {
+  margin-top: 0;
+  /*ひなたカラー*/
+  color: rgba(209,52,44,0.7);
+}
+
+h2 {
+  margin-top: 15px;
+}
+
+#links ul {
+  margin-top: 6px;
+  margin-bottom: 0;
+  padding-left: 5px;
+}
+
+#links li {
+  list-style-type: none;
+  margin-bottom: 5px;
+  /*琴葉カラー*/
+  border-left: solid rgba(146, 207, 187, 1);
+  line-height: 20px;
+}
+
+#links a {
+  color: #58a6dc;
+  font-style: italic;
+  font-weight: bold;
+  font-family: '游明朝';
+  text-decoration: none;
+}
+
+.explanation {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+#lists {
+  text-align: center;
+}
+
+#table {
+  position: relative;
+  display: inline-block;
+  width: 98vw;
+  max-height: 350px;
+  margin: 10px 0;
+  overflow: scroll;
+}
+
+table {
+  position: relative;
+  display: inline-block;
+  border: 2px solid rgba(0,200,0,0.5);
+  border-collapse: collapse;
+  white-space: pre;
+}
+
+table img {
+  position: absolute;
+  left: 0;
+  opacity: .03;
+  z-index: -1;
+}
+
+@keyframes rarefaction {
+  0%{
+    opacity: .03;
+  }
+  100%{
+    opacity: 1;
+  }
+}
+
+#back {
+  animation: rarefaction 3600s ease-in infinite alternate;
+}
+
+td {
+  border: 1px solid rgba(0,0,200,0.5);
+}
+
+.period {
+  width: 96px;
+  font-size: 14px;
+}
+
+#figure {
+  position: relative;
+  width: 90%;
+  height: 54vw;
+  margin: 0 auto;
+  padding: 3% 1.36% 0;
+  border: 1px solid black;
+  background-color: rgba(211, 221, 233, 0.2);
+  overflow: hidden;
+}
+
+@keyframes backrade {
+  from{
+    opacity: .2;
+    top: 38%;
+    left: -45%;
+    transform: scale(0.1);
+  }
+  20%{
+    opacity: .7;
+    top: -10%;
+    left: -8%;
+    transform: scale(1.6);
+  }
+  50%{
+    opacity: 1;
+    top: -20%;
+    left: 20%;
+    transform: scale(2);
+  }
+  80%{
+    opacity: .4;
+    top: -20%;
+    left: 20%;
+    transform: scale(1.2);
+  }
+  to{opacity: .1;top: -46%;left: 46%;transform: scale(0.1);}
+}
+
+#graph {
+  width: 100%;
+  height: 90%;
+  transform: rotateX(180deg);
+  overflow: visible;
+}
+
+#grad::after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(rgba(153,183,220,0.2)30%,rgba(211, 221, 233, 0.04)60%,rgba(0,0,0,0)90%);
+  animation: backrade 20s ease-in infinite;
+}
+
+aside {
+  position: relative;
+  height: 500px;/*仮*/
+  background-color: rgba(0,0,200,0.5);
+}
+
+.katarina {
+  position: absolute;
+  right: calc(50vw - 150px);
+  bottom: 0;
+  height: 50%;
+  overflow-y: scroll;
+}
+
+footer {
+  margin-top: 10px;
+  /*可奈カラー*/
+  background-color: rgba(245,173,59,0.7);
+}
+
+footer h2 {
+  margin-top: 0;
+}
+
+.hide {
+  display: none!important;
+}
+
+
+/*iphoneXの横向きより1px大きい*/
+@media (min-width:813px) {
+
+  body {
+    display: grid;
+    grid-template:
+    "header header" 120px
+    "main aside" 1fr
+    "footer footer" 80px /
+    1fr 240px;
+  }
+
+  header {
+    grid-area: header;
+  }
+
+  main {
+    grid-area: main;
+  }
+
+  #loading img {
+    width: 25%!important;
+  }
+
+  #table {
+    overflow-x: inherit;
+  }
+
+  table {
+    margin-top: 10px;
+  }
+
+  .period {
+    width: inherit;
+    font-size: inherit;
+  }
+
+  #figure {
+    height: 400px;
+    margin-left: 5px;
+  }
+
+  aside {
+    grid-area: aside;
+    height: inherit;
+  }
+
+  .katarina {
+    position: absolute;
+    right: inherit;
+    bottom: 0;
+    height: 50%;
+    overflow-y: scroll;
+  }
+
+  footer {
+    grid-area: footer;
+  }
+}

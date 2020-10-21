@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トップページ</title>
+    <link rel="icon" href="static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+
+  <body>
+
+      <!--ヘッダー-->
+      <header>
+
+        <a href="">
+          <h1>このサイトの名前(不○議.netみたいなやつ)</h1>
+        </a>
+
+      </header>
+
+      <!--メイン-->
+      <main>
+
+        <!--
+          ローディング時のGIF
+        -->
+        <div id="loading" style="position:fixed;top: 0;width:100vw;height:100vh;background-color:black;z-index:1">
+          <img src={{.src}} style="position:absolute;width:50%;right:10px;bottom:10px" alt={{.alt}}>
+        </div>
+
+        <article>
+
+        <!--
+          各リンク
+        -->
+        <div id="links">
+
+          <!--
+            イベント達のページ
+          -->
+          <section>
+            <h2>イベント達</h2>
+            <ul>
+              <li><a href="events">イベントデータ</a></li>
+              <p id="eventsExplanation" class="explanation">ミリコレ、WORKING以外のイベントのボーダーのデータ</p>
+            </ul>
+          </section>
+
+          <!--
+            計算機
+          -->
+          <section>
+            <h2>計算機達</h2>
+            <ul>
+              <li><a href="calc1">イベントポイント計算</a></li>
+              <p id="calc1Explanation" class="explanation">目標のポイントまでスタミナがどのくらい必要か計算する</p>
+              <li><a href="calc2">○○計算機</a></li>
+              <p id="calc2Explanation" class="explanation">○○を計算する</p>
+            </ul>
+          </section>
+
+        </div>
+
+        <!--
+          名前を入れてボタンを押すと「/room/名前」に飛ぶ
+          仕組みはlink.jsを参照
+        -->
+        <h2>ユーザーページ</h2>
+        <input id="user" type="text" placeholder="your name">
+        <input type="button" id="nb" value="send">
+
+        <!--
+          メモ用
+        -->
+        <div class="memo">
+          <p>こんな感じに</p>
+          <p>何か書く</p>
+        </div>
+
+      </article>
+    </main>
+
+    <!--サイドバー-->
+    <aside>
+
+      <!--
+        メニュー
+      -->
+      <div class="menu">
+        <ul>
+          <li>a</li>
+          <li>b</li>
+        </ul>
+      </div>
+
+      <!--
+        かたりな氏のストリーム
+      -->
+      <div class="katarina">
+        <a class="twitter-timeline" href="https://twitter.com/BOSH_JP060?ref_src=twsrc%5Etfw">Tweets by BOSH_JP060</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+      </div>
+
+    </aside>
+
+    <!--フッター-->
+    <footer>
+
+      <h2>フッター</h2>
+
+    </footer>
+
+    <script async defer src="/static/js/top.js"></script>
+
+  </body>
+</html>

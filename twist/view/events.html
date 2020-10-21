@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>イベントリンク</title>
+    <link rel="icon" href="static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+
+  <body>
+
+    <!--ヘッダー-->
+    <header>
+
+      <a href="/">
+        <h1>このサイトの名前(不○議.net)みたいなやつ</h1>
+      </a>
+
+    </header>
+
+    <!--メイン-->
+    <main>
+
+      <!--
+        ローディング時のGIF
+      -->
+      <div id="loading" style="position:fixed;top: 0;width:100vw;height:100vh;background-color:black;z-index:1">
+        <img src={{.src}} style="position:absolute;width:50%;right:10px;bottom:10px" alt={{.alt}}>
+      </div>
+
+      <article>
+
+        <h2>イベント達</h2>
+        <p>ボーダーのグラフを比べる, 比べたいイベントにチェック入れてボタン押す</p>
+        <div id="lists">
+          <!--
+          ボタンとセレクトボックス
+          -->
+          <input type="button" id="bt" value="poti">
+          <select id="rank">
+            <option value="one">100位</option>
+            <option value="two">2500位</option>
+            <option value="three">5000位</option>
+            <option value="four">10000位</option>
+            <option value="five">25000位</option>
+            <option value="six">50000位</option>
+          </select>
+          <!--
+            イベントリスト
+          -->
+          <div id="table">{{.list}}</div>
+        </div>
+
+        <!--
+          選んだ奴
+        -->
+        <div id="figure">
+          <!--
+            グラフ
+          -->
+          <svg id="graph">graph</svg>
+          <!--
+            背景
+          -->
+          <div></div>
+          <!--ここにdivかなんかでイベント名と色を並べる-->
+        </div>
+
+        <!--color test-->
+        <input type="button" id="bbbb">
+        <div id="ct"></div>
+
+      </article>
+    </main>
+
+    <!--アサイド-->
+    <aside>
+      <h2>アサイド</h2>
+    </aside>
+
+    <!--フッター-->
+    <footer>
+
+      <h2>フッター</h2>
+
+    </footer>
+
+    <script async defer src="/static/js/events.js"></script>
+
+  </body>
+
+</html>
