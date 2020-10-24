@@ -1,9 +1,7 @@
 package ts
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -17,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/joho/godotenv"
 )
 
 type apikey struct {
@@ -80,15 +79,18 @@ var (
 func setconf() (api *anaconda.TwitterApi, v url.Values) {
 
 	//apiの設定
-	apiconf, err := ioutil.ReadFile("./FRI13th/twisql.json")
-	if err != nil {
-		fmt.Printf("--couldn't get API---\n%v\n", err)
+	if os.Getenv("PORT") != "" {
+		if err = godotenv.Load("pro.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
+	} else {
+		if err = godotenv.Load("dev.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
 	}
-	key := apikey{}
-	json.Unmarshal(apiconf, &key)
-	anaconda.SetConsumerKey(key.Ck)
-	anaconda.SetConsumerSecret(key.Cs)
-	api = anaconda.NewTwitterApi(key.At, key.Ats)
+	anaconda.SetConsumerKey(os.Getenv("ConsumerKey"))
+	anaconda.SetConsumerSecret(os.Getenv("ConsumerSecret"))
+	api = anaconda.NewTwitterApi("AccessToken", "AccessTokenSecret")
 
 	//とるのはテキストBOTさんの投稿、上から4個
 	v = url.Values{}
@@ -107,14 +109,18 @@ func setconf() (api *anaconda.TwitterApi, v url.Values) {
 func gormcore() *gorm.DB {
 
 	//mysqlの設定
-	sqlconf, err := ioutil.ReadFile("./FRI13th/twisql.json")
-	if err != nil {
-		fmt.Printf("--couldn't get SQL---\n%v\n", err)
+	//本番か開発かで設定を変える
+	if os.Getenv("PORT") != "" {
+		if err = godotenv.Load("pro.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
+	} else {
+		if err = godotenv.Load("dev.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
 	}
-	key := sqlkey{}
-	json.Unmarshal(sqlconf, &key)
-	connect := key.Us + ":" + key.Pa + "@" + key.Pr + "/" + key.Dbn
-	db, err := gorm.Open(key.Dbm, connect)
+	db, err := gorm.Open("mysql", os.Getenv("User")+
+		":"+os.Getenv("Pass")+"@"+os.Getenv("Protocol")+"/"+os.Getenv("Dbname"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -973,8 +979,11 @@ func Run() {
 		ミスじゃなくて、単純に50000位まで人がおらんのが原因
 	*/
 
-	/*r.Run(":8080")*/
-	r.Run(":" + os.Getenv("PORT"))
+	if port := os.Getenv("PORT"); port != "" {
+		r.Run(":" + os.Getenv("PORT"))
+	} else {
+		r.Run(":8080")
+	}
 	/*
 		cmdで「set PORT=○○○○」を実行後に「http://localhost:○○○○/」にアクセスする
 	*/
