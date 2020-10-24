@@ -1,1 +1,1 @@
-web: bin/heroku-app
+web: heroku-app
