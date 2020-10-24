@@ -1,1 +1,1 @@
-web: bin/m111app
+web: heroku-app
