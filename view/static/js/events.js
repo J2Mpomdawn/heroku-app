@@ -175,10 +175,7 @@ function check(){
 ローディング時のgifを消す
 */
 window.addEventListener("load",function(){
-  setTimeout(
-    function(){
-      document.getElementById("loading").remove();
-    },"500");
+  document.getElementById("loading").remove();
 },false);
 
 document.getElementById("bt").onclick=check;

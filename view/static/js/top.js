@@ -17,12 +17,7 @@ document.getElementById("nb").onclick = move;
 ローディング時の表示非表示
 */
 window.addEventListener("load",function(){
-  setTimeout(
-    function(){
-      document.getElementById("loading").remove();
-    },
-    "5000"
-  )
+  document.getElementById("loading").remove();
 },false)
 
 /*
