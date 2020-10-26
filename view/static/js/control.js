@@ -54,3 +54,8 @@ document.getElementById("looktables").addEventListener("click",{handleEvent:ajf,
 record取得
 */
 document.getElementById("lookrecords").addEventListener("click",{handleEvent:ajf,arg:1},false);
+
+/*
+tableリセット
+*/
+document.getElementById("resettables").addEventListener("click",{handleEvent:ajf,arg:2},false)

@@ -846,6 +846,19 @@ func control(f, n, s, w string) (ajax interface{}) {
 			}
 			return string(rcsb)
 		}
+
+		//tableリセット
+	case "2":
+		//とりあえずテーブルを消してもう一回作るだけ
+		//後々には記録してたデータも入れなおすようにする
+		db.DropTable("list")
+		db.DropTable("datas")
+		db.Table("list").CreateTable(&period{})
+		db.Table("datas").CreateTable(&post{})
+
+		//caseを追加するときに分かりやすいように置いとく
+	default:
+		/*なし*/
 	}
 	return
 }
