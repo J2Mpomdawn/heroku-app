@@ -18,21 +18,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type apikey struct {
-	Ck  string `json:"ConsumerKey"`
-	Cs  string `json:"ConsumerSecret"`
-	At  string `json:"AccessToken"`
-	Ats string `json:"AccessTokenSecret"`
-}
-
-type sqlkey struct {
-	Dbm string `json:"Dbms"`
-	Us  string `json:"User"`
-	Pa  string `json:"Pass"`
-	Pr  string `json:"Protocol"`
-	Dbn string `json:"Dbname"`
-}
-
 type postime struct {
 	h rune
 	m bool
@@ -79,15 +64,6 @@ var (
 func setconf() (api *anaconda.TwitterApi, v url.Values) {
 
 	//apiの設定
-	if os.Getenv("PORT") != "" {
-		if err = godotenv.Load("pro.env"); err != nil {
-			fmt.Printf("--couldn't load env---\n%v\n", err)
-		}
-	} else {
-		if err = godotenv.Load("dev.env"); err != nil {
-			fmt.Printf("--couldn't load env---\n%v\n", err)
-		}
-	}
 	anaconda.SetConsumerKey(os.Getenv("ConsumerKey"))
 	anaconda.SetConsumerSecret(os.Getenv("ConsumerSecret"))
 	api = anaconda.NewTwitterApi("AccessToken", "AccessTokenSecret")
@@ -110,17 +86,15 @@ func gormcore() *gorm.DB {
 
 	//mysqlの設定
 	//本番か開発かで設定を変える
-	if os.Getenv("PORT") != "" {
-		if err = godotenv.Load("pro.env"); err != nil {
-			fmt.Printf("--couldn't load env---\n%v\n", err)
-		}
-	} else {
+	protocol := "tcp(" + os.Getenv("DB_HOSTNAME") + ":3306)"
+	if os.Getenv("PORT") == "" {
 		if err = godotenv.Load("dev.env"); err != nil {
 			fmt.Printf("--couldn't load env---\n%v\n", err)
 		}
+		protocol = ""
 	}
-	db, err := gorm.Open("mysql", os.Getenv("User")+
-		":"+os.Getenv("Pass")+"@"+os.Getenv("Protocol")+"/"+os.Getenv("Dbname"))
+	db, err := gorm.Open("mysql", os.Getenv("DB_USERNAME")+
+		":"+os.Getenv("DB_PASSWORD")+"@"+protocol+"/"+os.Getenv("DB_NAME"))
 	if err != nil {
 		panic(err.Error())
 	}
