@@ -891,6 +891,11 @@ func Run() {
 		c.HTML(http.StatusOK, "calc1.html", gin.H{})
 	})
 
+	//仮実装
+	r.GET("calc1/kari", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "calc0.9.html", gin.H{})
+	})
+
 	//○○計算
 	r.GET("calc2", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "calc2.html", gin.H{})

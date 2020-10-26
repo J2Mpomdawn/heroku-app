@@ -2,14 +2,15 @@
 <html lang="ja">
     <head>
         <meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1.0">
-        <link rel="stylesheet" href="style.css" type="text/css">
         <title>K3KI</title>
+        <link rel="icon" href="static/img/favicon.ico">
+        <link rel="stylesheet" href="/static/css/calc1.css">
     </head>
     <body>
         <h1>計算機</h1>
         <p>計算機(シミュレータ)</p>
         <div id="gage">
-            <img src="F5C5181C-2496-4700-8F75-56423765CD16.png">
+            <img src="/static/img/frame.png">
             <form onsubmit="return false;">
                 <input type="tel" id="lv" value="133" maxlength="3">
                 <input type="tel" id="exp" value="1937" maxlength="6">
@@ -36,7 +37,7 @@
               <option value="2">２倍</option>
               <option id ="bai" value="4">４倍</option>
             </select>
-            
+
             <input type="button" id="bo" value="自然回復分を含める">
             <input type="button" id="st" value="シアター">
             <label>
@@ -54,7 +55,6 @@
             <input type="tel" id="tame" value="193777"></input>
             <label for="tame" id="ta">123456</label>
         </div>
-        <script src="main.js"></script>
         <h2>結果はっぴょぉおお</h2>
         <div id="rsf">0</div>
         <div id="rsp">0</div>
@@ -68,5 +68,6 @@
             <div id="ncl">0</div>
             <div id="ncp">0</div>
         </div>
+        <script async defer src="/static/js/calc1.js"></script>
     </body>
 </html>
