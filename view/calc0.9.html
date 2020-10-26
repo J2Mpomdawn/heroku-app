@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1.0">
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <title>K3KI</title>
+    </head>
+    <body>
+        <h1>計算機</h1>
+        <p>計算機(シミュレータ)</p>
+        <div id="gage">
+            <img src="F5C5181C-2496-4700-8F75-56423765CD16.png">
+            <form onsubmit="return false;">
+                <input type="tel" id="lv" value="133" maxlength="3">
+                <input type="tel" id="exp" value="1937" maxlength="6">
+                <input type="tel" id="fn" value="130" maxlength="3">
+                <input type="tel" id="dia" value="25720" maxlength="7">
+                <input type="tel" id="tix" value="420" maxlength="3">
+                <input type="button" id="bt" value="bota">
+            </form>
+            <progress id="bar1" max="100" value="0"></progress>
+            <progress id="bar2" max="100" value="0"></progress>
+            <progress id="bar3" max="100" value="0"></progress>
+        </div>
+        <hr>
+        <form onsubmit="return false;">
+            <input type="time" id="tm" value="20:59" step="300" max="20:59">
+            <label>
+                目標
+            <input type="tel" id="gl">
+            </label>
+            <input type="button" id="le" value="ライブ">
+            <input type="button" id="bc" value="１倍">
+            <select id="bi">
+              <option value="1">１倍</option>
+              <option value="2">２倍</option>
+              <option id ="bai" value="4">４倍</option>
+            </select>
+            
+            <input type="button" id="bo" value="自然回復分を含める">
+            <input type="button" id="st" value="シアター">
+            <label>
+                イベ期間
+                <select id="kika">
+                    <option value="7">150h(n日～n+6日)</option>
+                    <option value="8" selected>174h(n日～n+7日)</option>
+                    <option value="9">198h(n日～n+8日)</option>
+                </select>
+            </label>
+            <input type="button" id="ksan" value="計算">
+        </form>
+        <br>
+        <div id="tam">
+            <input type="tel" id="tame" value="193777"></input>
+            <label for="tame" id="ta">123456</label>
+        </div>
+        <script src="main.js"></script>
+        <h2>結果はっぴょぉおお</h2>
+        <div id="rsf">0</div>
+        <div id="rsp">0</div>
+        <div id="rsl">0</div>
+        <div id="cos">0</div>
+        <div id="ivs">0</div>
+        <div id="rmf">0</div>
+        <div id="rmi">0</div>
+        <div>
+            自然回復分
+            <div id="ncl">0</div>
+            <div id="ncp">0</div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,77 @@
+#gage img {
+    width: 95%;
+    height: auto;
+}
+
+hr {
+    background-color: #533b3b;
+}
+
+#rsf::before {
+    content: "必要スタミナ:"
+}
+
+#rsp::before {
+    content: "獲得ポイント:";
+}
+
+#rsl::before {
+    content: "最終レベル:";
+}
+
+#cos::before {
+    content: "通常回数:";
+}
+
+#ivs::before {
+    content: "イベ回数:";
+}
+
+#rmf::before {
+    content: "スタミナ余り:";
+}
+
+#rmi::before {
+    content: "アイテム余り:";
+}
+
+#ncl::before {
+    content: "レベル:";
+}
+
+#ncp::before {
+    content: "ポイント:";
+}
+
+#lv:focus, #exp:focus, #fn:focus, #dia:focus, #tix:focus {
+    outline: none;
+}
+
+/*fn,exp用*/
+#tam {
+    background-color: blue;
+    text-align: right;
+    width: 38vw;
+    transform: scale(1.5);
+    position: relative;
+    left: 150px;
+}
+
+#tame {
+    border: none;
+    text-align: right;
+    background-color: red;
+    font-size: 5vw;
+    width: 46%
+}
+
+#ta {
+    background-color: green;
+    font-size: 5vw;
+    margin-left: -5.8px;
+    font-family: Arial;
+}
+
+#ta::before {
+    content: "/"
+}
