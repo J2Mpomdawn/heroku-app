@@ -244,6 +244,11 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 			fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		}
 
+		/**/
+		for _, vvv := range twii {
+			fmt.Println(vvv)
+		}
+
 		//改行コードを"\n"に統一
 		//「折り返し」が入ってたら一個前の投稿を使う
 		if strings.Contains(twii[0].FullText, "折り返し") {
@@ -272,6 +277,10 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 	if err != nil {
 		fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		return
+	}
+	/**/
+	for _, vvv := range tweets {
+		fmt.Println(vvv)
 	}
 
 	//古い投稿から処理したいからカウントダウンでループ
