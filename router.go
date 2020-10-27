@@ -427,6 +427,10 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 					//最終日やったら
 					if m == 7 {
 						pt.Num = twt
+						/**/
+						fmt.Print(twt, "/")
+						fmt.Println(pt.Num)
+
 						db.Table("datas").Save(&pt)
 
 						//記録整理
@@ -529,7 +533,13 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 					for d, x := range dates {
 						if tweet == x {
 							pt.Num = 48*d + int(poti.h) - fwt
-							/*db.Table("datas").Save(&pt)*/
+							/**/
+							fmt.Println(dates)
+							fmt.Println(fwt)
+							fmt.Println(poti)
+							fmt.Println(pt.Num)
+
+							db.Table("datas").Save(&pt)
 
 							/*
 								DB操作のテスト用に使う
