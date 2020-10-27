@@ -64,9 +64,15 @@ var (
 func setconf() (api *anaconda.TwitterApi, v url.Values) {
 
 	//apiの設定
+	//本番か開発かで設定を変える
+	if os.Getenv("PORT") == "" {
+		if err = godotenv.Load("dev.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
+	}
 	anaconda.SetConsumerKey(os.Getenv("ConsumerKey"))
 	anaconda.SetConsumerSecret(os.Getenv("ConsumerSecret"))
-	api = anaconda.NewTwitterApi("AccessToken", "AccessTokenSecret")
+	api = anaconda.NewTwitterApi(os.Getenv("AccessToken"), os.Getenv("AccessTokenSecret"))
 
 	//とるのはテキストBOTさんの投稿、上から4個
 	v = url.Values{}
@@ -235,8 +241,10 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 		v.Set("count", "2")
 		twii, err := api.GetUserTimeline(v)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		}
+		/**/
+		fmt.Println(os.Environ())
 
 		//改行コードを"\n"に統一
 		//「折り返し」が入ってたら一個前の投稿を使う
@@ -937,7 +945,7 @@ func Run() {
 		var (
 			//1800000...30min
 			//10000...10s
-			wait, gap int = 1800000, 0
+			wait, gap int = 10000, 0
 			wt        time.Duration
 			start     time.Time
 		)
