@@ -243,8 +243,6 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 		if err != nil {
 			fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		}
-		/**/
-		fmt.Println(os.Environ())
 
 		//改行コードを"\n"に統一
 		//「折り返し」が入ってたら一個前の投稿を使う
@@ -876,6 +874,9 @@ func Run() {
 	//ツイート取得の準備
 	api, v := setconf()
 
+	//開始時に一回やっとく
+	gettweets(api, v)
+
 	//サーバーの準備
 	r := gin.Default()
 	r.LoadHTMLGlob("view/*.html")
@@ -889,6 +890,9 @@ func Run() {
 		src, alt = roulette()
 		c.HTML(http.StatusOK, "top.html", gin.H{"src": src, "alt": alt})
 	})
+
+	//HEADリクエスト
+	r.HEAD("/")
 
 	//いらん
 	r.GET("room/:name", func(c *gin.Context) {
@@ -929,8 +933,13 @@ func Run() {
 	})
 
 	//DB管理
+	/*
+		"control"の文字は環境変数から受けとるように変更する
+	*/
 	r.GET("control", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "control.html", gin.H{})
+		/**/
+		fmt.Println(os.Environ())
 	})
 
 	//tables
