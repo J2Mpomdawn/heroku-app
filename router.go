@@ -945,7 +945,7 @@ func Run() {
 		var (
 			//1800000...30min
 			//10000...10s
-			wait, gap int = 10000, 0
+			wait, gap int = 1800000, 0
 			wt        time.Duration
 			start     time.Time
 		)
