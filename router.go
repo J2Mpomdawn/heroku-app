@@ -246,7 +246,8 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 
 		/**/
 		for _, vvv := range twii {
-			fmt.Println(vvv)
+			fmt.Println("st", vvv.RetweetedStatus)
+			fmt.Println("te", vvv.FullText)
 		}
 
 		//改行コードを"\n"に統一
@@ -280,7 +281,8 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 	}
 	/**/
 	for _, vvv := range tweets {
-		fmt.Println(vvv)
+		fmt.Println("st", vvv.RetweetedStatus)
+		fmt.Println("te", vvv.FullText)
 	}
 
 	//古い投稿から処理したいからカウントダウンでループ
@@ -416,6 +418,8 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 							pt.One = "0"
 						}
 					}
+					/**/
+					fmt.Println(pt)
 
 					//何日のボーダーか取得
 					tweet = string(ru[b-9 : b-7])
