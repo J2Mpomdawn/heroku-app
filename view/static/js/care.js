@@ -22,7 +22,7 @@ var tbs = function(response){
     }
     ajf = function(){
       const ajax = new XMLHttpRequest;
-      ajax.open("POST","controlajax",true);
+      ajax.open("POST","careajax",true);
       ajax.setRequestHeader("content-type", "application/x-www-form-urlencoded;charset=UTF-8");
       let n = this.arg;
       ajax.addEventListener("load",function(){
@@ -38,6 +38,9 @@ var tbs = function(response){
               return
             }
             break;
+          case 2:
+              location.href="download/datas";
+              break;
           default:
             console.log(this);
         }
@@ -59,3 +62,6 @@ document.getElementById("lookrecords").addEventListener("click",{handleEvent:ajf
 tableリセット
 */
 document.getElementById("resettables").addEventListener("click",{handleEvent:ajf,arg:2},false)
+
+/**/
+document.getElementById("down").addEventListener("click",function(){location.href="download/datas"},false)
