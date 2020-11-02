@@ -3,6 +3,7 @@ package ts
 import (
 	"fmt"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -973,6 +974,22 @@ func Run() {
 
 	//管理
 	r.GET(mas, func(c *gin.Context) {
+		ip, err := net.InterfaceAddrs()
+		if err != nil {
+			fmt.Printf("--ERROR---\n%v\n", err)
+		}
+		fmt.Println("^^^")
+		for _, vv := range ip {
+			fmt.Println(vv)
+		}
+		fmt.Println("^^^")
+		for _, vv := range ip {
+			vvv, oo := vv.(*net.IPNet)
+			if oo && !vvv.IP.IsLoopback() && vvv.IP.To4() != nil {
+				ii := vvv.IP.String()
+				fmt.Println("ip:", ii)
+			}
+		}
 		c.HTML(http.StatusOK, "care.html", gin.H{})
 	})
 
