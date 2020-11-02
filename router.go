@@ -16,6 +16,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/joho/godotenv"
+	"github.com/tealeg/xlsx"
 )
 
 type postime struct {
@@ -170,6 +171,8 @@ label:
 					time.sleep(ato)を
 					time.Sleep(-time.Since(end.Add(-539 * time.Minute)))
 					↑こうする
+
+					なんかこのままでもいいような気がしてきた
 				*/
 				time.Sleep(ato)
 				m = 11
@@ -244,12 +247,6 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 			fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		}
 
-		/**/
-		for _, vvv := range twii {
-			fmt.Println("st", vvv.RetweetedStatus)
-			fmt.Println("te", vvv.FullText)
-		}
-
 		//改行コードを"\n"に統一
 		//「折り返し」が入ってたら一個前の投稿を使う
 		if strings.Contains(twii[0].FullText, "折り返し") {
@@ -278,11 +275,6 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 	if err != nil {
 		fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		return
-	}
-	/**/
-	for _, vvv := range tweets {
-		fmt.Println("st", vvv.RetweetedStatus)
-		fmt.Println("te", vvv.FullText)
 	}
 
 	//古い投稿から処理したいからカウントダウンでループ
@@ -418,8 +410,6 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 							pt.One = "0"
 						}
 					}
-					/**/
-					fmt.Println(pt)
 
 					//何日のボーダーか取得
 					tweet = string(ru[b-9 : b-7])
@@ -427,10 +417,6 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 					//最終日やったら
 					if m == 7 {
 						pt.Num = twt
-						/**/
-						fmt.Print(twt, "/")
-						fmt.Println(pt.Num)
-
 						db.Table("datas").Save(&pt)
 
 						//記録整理
@@ -533,12 +519,6 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 					for d, x := range dates {
 						if tweet == x {
 							pt.Num = 48*d + int(poti.h) - fwt
-							/**/
-							fmt.Println(dates)
-							fmt.Println(fwt)
-							fmt.Println(poti)
-							fmt.Println(pt.Num)
-
 							db.Table("datas").Save(&pt)
 
 							/*
@@ -794,11 +774,11 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 }
 
 //管理する感じのやつ
-func control(f, n, s, w string) (ajax interface{}) {
+func control(c *gin.Context) (ajax interface{}) {
 	db := gormcore()
 	defer db.Close()
 
-	switch f {
+	switch c.PostForm("f") {
 
 	//tables取得
 	case "0":
@@ -821,12 +801,15 @@ func control(f, n, s, w string) (ajax interface{}) {
 	case "1":
 		rcsb := make([]byte, 0, 32768)
 		rcsb = append(rcsb, 227, 131, 172, 227, 130, 179, 227, 131, 188, 227, 131, 137, 230, 149, 176, 58, 32)
+		s := c.PostForm("s")
+		w := c.PostForm("w")
 		if s == "" {
 			s = "*"
 		}
 		if w != "" {
 			w = " where " + w
 		}
+		n := c.PostForm("n")
 		switch n {
 
 		//from datas
@@ -878,12 +861,45 @@ func control(f, n, s, w string) (ajax interface{}) {
 
 		//tableリセット
 	case "2":
-		//とりあえずテーブルを消してもう一回作るだけ
-		//後々には記録してたデータも入れなおすようにする
-		db.DropTable("list")
-		db.DropTable("datas")
-		db.Table("list").CreateTable(&period{})
-		db.Table("datas").CreateTable(&post{})
+		list := []period{}
+		datas := []post{}
+		db.Table("list").Select("num").Find(&list)
+		xf, err := xlsx.OpenFile("datas.xlsx")
+		if err != nil {
+			fmt.Printf("--couldn't open the file---\n%v\n", err)
+		}
+		xfs, err := xf.ToSlice()
+		if err != nil {
+			fmt.Printf("--couldn't read the sheets---\n%v\n", err)
+		}
+		i := 0
+		for ; ; i++ {
+			if xfs[0][0][i] == "" {
+				break
+			}
+		}
+		for _, num := range list {
+			db.Raw("select*from(select*from datas where name=? order by name,num)as A group by num", num.Num).Scan(&datas)
+			for _, data := range datas {
+				/*
+					Cell(row,col)
+					ex.) C2 -> Cell(1,2)*/
+				fmt.Println(data)
+				/*xf.Sheets[0].Cell(0, 1).Value = "2"
+				xf.Sheets[0].Cell(1, 1).Value = "6"*/
+			}
+		}
+		if err = xf.Save("datas.xlsx"); err != nil {
+			fmt.Printf("--couldn't save the file---\n%v\n", err)
+		}
+
+		/*
+			完成するまでここはコメントアウト
+			db.DropTable("list")
+			db.DropTable("datas")
+			db.Table("list").CreateTable(&period{})
+			db.Table("datas").CreateTable(&post{})
+		*/
 
 		//caseを追加するときに分かりやすいように置いとく
 	default:
@@ -897,8 +913,8 @@ func Run() {
 	//ツイート取得の準備
 	api, v := setconf()
 
-	//開始時に一回やっとく
-	gettweets(api, v)
+	//master
+	mas := os.Getenv("Master")
 
 	//サーバーの準備
 	r := gin.Default()
@@ -955,19 +971,22 @@ func Run() {
 		c.HTML(http.StatusOK, "ajax.html", gin.H{"tweet": n, "coord": "M0 0 L75 150 L150 0"})
 	})
 
-	//DB管理
-	/*
-		"control"の文字は環境変数から受けとるように変更する
-	*/
-	r.GET("control", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "control.html", gin.H{})
-		/**/
-		fmt.Println(os.Environ())
+	//管理
+	r.GET(mas, func(c *gin.Context) {
+		c.HTML(http.StatusOK, "care.html", gin.H{})
 	})
 
-	//tables
-	r.POST("controlajax", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "controlajax.html", gin.H{"ajax": control(c.PostForm("f"), c.PostForm("n"), c.PostForm("s"), c.PostForm("w"))})
+	//ajax
+	r.POST("careajax", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "careajax.html", gin.H{"ajax": control(c)})
+	})
+
+	//download
+	r.GET("download/datas", func(c *gin.Context) {
+		//ダウンロード
+		/*c.Writer.Header().Add("Content-Disposition", "attachment; filename=datas.xlsx")
+		c.Writer.Header().Add("Content-Type", "application/octet-stream")
+		c.File("datas.xlsx")*/
 	})
 
 	//30分毎にツイートの取得
@@ -981,6 +1000,10 @@ func Run() {
 			wt        time.Duration
 			start     time.Time
 		)
+
+		//開始時に一回やっとく
+		gettweets(api, v)
+
 		g := []byte(time.Now().Format("05.0")[3:4])[0]
 		if g < 53 {
 			g += 5
