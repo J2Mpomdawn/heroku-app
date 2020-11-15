@@ -3,6 +3,7 @@ module ts
 go 1.13
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize/v2 v2.3.1
 	github.com/ChimeraCoder/anaconda v2.0.0+incompatible
 	github.com/ChimeraCoder/tokenbucket v0.0.0-20131201223612-c5a927568de7 // indirect
 	github.com/azr/backoff v0.0.0-20160115115103-53511d3c7330 // indirect
@@ -10,8 +11,9 @@ require (
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
 	github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17 // indirect
 	github.com/gin-gonic/gin v1.6.3
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jinzhu/gorm v1.9.16
-	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f // indirect
-	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
+	github.com/joho/godotenv v1.3.0
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/scorredoira/email v0.0.0-20191107070024-dc7b732c55da
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
