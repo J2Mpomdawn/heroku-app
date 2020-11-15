@@ -38,9 +38,6 @@ var tbs = function(response){
               return
             }
             break;
-          case 2:
-              location.href="download/datas";
-              break;
           default:
             console.log(this);
         }
@@ -61,7 +58,19 @@ document.getElementById("lookrecords").addEventListener("click",{handleEvent:ajf
 /*
 tableリセット
 */
-document.getElementById("resettables").addEventListener("click",{handleEvent:ajf,arg:2},false)
+document.getElementById("getdatas").addEventListener("click",{handleEvent:ajf,arg:2},false);
 
-/**/
-document.getElementById("down").addEventListener("click",function(){location.href="download/datas"},false)
+/*mysqlテスト*/
+document.getElementById("dbreq").addEventListener("click",{handleEvent:ajf,arg:3},false);
+
+//time test
+document.getElementById("tes").addEventListener("click",function(){
+  let date1=new Date(document.getElementById("h3").innerText);
+  console.log(date1);
+  let date2=new Date();
+  console.log(date2);
+  console.log(Math.round((date2-date1)/360000)/10,"時間");
+},false);
+
+/*reborn 仮*/
+document.getElementById("reborn").addEventListener("click",{handleEvent:ajf,arg:4},false);
