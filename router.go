@@ -838,7 +838,7 @@ func send(tion bool) (ok bool) {
 		}
 		return
 	}(tion)
-	from := "uuruurs"
+	from := "imymemine"
 	fromAdd := os.Getenv("M_from")
 	pass := os.Getenv("M_frompass")
 	to0 := os.Getenv("M_to")
@@ -849,6 +849,7 @@ func send(tion bool) (ok bool) {
 	if bl {
 		subject = "えまーじぇんしー"
 		body = "再構築になんか問題あり"
+		from = "uuruurs"
 	}
 
 	//メッセージ作成
@@ -904,6 +905,7 @@ func send(tion bool) (ok bool) {
 	}
 	c.Quit()
 
+	fmt.Println("ok")
 	return true
 }
 
