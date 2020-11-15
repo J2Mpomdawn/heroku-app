@@ -1154,7 +1154,7 @@ func control(c *gin.Context) (ajax interface{}) {
 
 func Run() {
 	//現在時刻
-	now := time.Now()
+	now := time.Now().Add(9 * time.Hour)
 
 	if os.Getenv("PORT") == "" {
 		if err = godotenv.Load("dev.env"); err != nil {
@@ -1190,10 +1190,12 @@ func Run() {
 	//イベントページ
 	r.GET("events", func(c *gin.Context) {
 		src, alt := roulette()
+
 		if bl {
 			//DB再構築中
-			c.HTML(http.StatusOK, "room.html", gin.H{})
+			c.HTML(http.StatusOK, "room.html", gin.H{"Name": "メンテ中"})
 		}
+
 		c.HTML(http.StatusOK, "events.html", gin.H{"src": src, "alt": alt, "list": eventlist()})
 	})
 
@@ -1257,7 +1259,7 @@ func Run() {
 		gettweets(api, v)
 
 		//一日やったらバックアップ作成
-		if time.Now().Day() == 1 {
+		if now.Day() == 1 {
 			if backup() {
 				if !send(false) {
 					fmt.Println("send failed")
