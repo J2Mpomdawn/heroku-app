@@ -218,7 +218,7 @@ label:
 
 				//データベースに登録
 				db := gormcore()
-				db.Table("list").CreateTable(&period{})
+				//db.Table("list").CreateTable(&period{})
 				db.Table("list").Save(&pe)
 				db.Close()
 			}
@@ -262,7 +262,7 @@ func gettweets(api *anaconda.TwitterApi, v url.Values) {
 
 	//DB用意
 	db := gormcore()
-	db.Table("datas").CreateTable(&post{})
+	//db.Table("datas").CreateTable(&post{})
 	defer db.Close()
 
 	//ツイートの取得
@@ -818,7 +818,7 @@ func backup() (ok bool) {
 	}
 
 	//セーブ
-	if err = xf.Save(); err != nil {
+	if err = xf.SaveAs("/tmp/datas.xlsx"); err != nil {
 		fmt.Printf("--couldn't save the file---\n%v\n", err)
 		return
 	}
@@ -857,7 +857,7 @@ func send(tion bool) (ok bool) {
 	ml.From = mail.Address{Name: from, Address: fromAdd}
 	ml.To = []string{to0}
 	if !bl {
-		if err = ml.Attach("datas.xlsx"); err != nil {
+		if err = ml.Attach("/tmp/datas.xlsx"); err != nil {
 			fmt.Printf("--couldn't attach the file---\n%v\n", err)
 			return
 		}
