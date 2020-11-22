@@ -74,3 +74,6 @@ document.getElementById("tes").addEventListener("click",function(){
 
 /*reborn 仮*/
 document.getElementById("reborn").addEventListener("click",{handleEvent:ajf,arg:4},false);
+
+/*tmp test*/
+document.getElementById("cretes").addEventListener("click",{handleEvent:ajf,arg:5},false);
