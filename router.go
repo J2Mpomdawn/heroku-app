@@ -14,6 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"io/ioutil"
+	"path/filepath"
+
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/gin-gonic/gin"
@@ -914,6 +917,7 @@ func send(tion bool) (ok bool) {
 	return true
 }
 
+////////////////////////////////////////
 func send1(tion bool) (ok bool) {
 	subject := time.Now().Format("2006/1/2")
 	body := func(opera bool) (style string) {
@@ -985,6 +989,23 @@ func send1(tion bool) (ok bool) {
 	fmt.Println("ok")
 	return true
 }
+func dirwalk(dir string) (paths []string) {
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			paths = append(paths, "\n")
+			paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
+			continue
+		}
+		paths = append(paths, "\n", filepath.Join(dir, file.Name()))
+	}
+	return
+}
+
+///////////////////////////////////////////
 
 //rebuild
 func remake() (ok bool) {
@@ -1226,15 +1247,17 @@ func control(c *gin.Context) (ajax interface{}) {
 
 		//一時保存テスト
 	case "5":
-		f, err := os.Create("./tmp/test.txt")
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer f.Close()
-		f.WriteString("test")
-		if !send1(true) {
-			fmt.Println("failed")
-		}
+		/*
+			f, err := os.Create("./tmp/test.txt")
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer f.Close()
+			f.WriteString("test")
+			if !send1(true) {
+				fmt.Println("failed")
+			}*/
+		fmt.Println(dirwalk("../../"))
 
 		//caseを追加するときに分かりやすいように置いとく
 	default:
