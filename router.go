@@ -990,6 +990,15 @@ func send1(tion bool) (ok bool) {
 	return true
 }
 func dirwalk(dir string) (paths []string) {
+	if err = os.Mkdir("tmp", 0777); err != nil {
+		fmt.Println(err)
+	}
+	f, err := os.Create("test.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer f.Close()
+	f.WriteString("123\n456")
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Println(err)
