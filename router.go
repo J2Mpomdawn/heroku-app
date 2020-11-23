@@ -14,9 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"io/ioutil"
-	"path/filepath"
-
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/gin-gonic/gin"
@@ -917,96 +914,6 @@ func send(tion bool) (ok bool) {
 	return true
 }
 
-////////////////////////////////////////
-func send1(tion bool) (ok bool) {
-	subject := time.Now().Format("2006/1/2")
-	body := func(opera bool) (style string) {
-		if opera {
-			style = "manual"
-		} else {
-			style = "auto"
-		}
-		return
-	}(tion)
-	from := "imymemine"
-	fromAdd := os.Getenv("M_from")
-	pass := os.Getenv("M_frompass")
-	to0 := os.Getenv("M_to")
-	servername := os.Getenv("M_servername")
-	host := strings.Split(servername, ":")[0]
-	if bl {
-		subject = "えまーじぇんしー"
-		body = "再構築になんか問題あり"
-		from = "uuruurs"
-	}
-	ml := email.NewMessage(subject, body)
-	ml.From = mail.Address{Name: from, Address: fromAdd}
-	ml.To = []string{to0}
-	if !bl {
-		if err = ml.Attach("./tmp/test.txt"); err != nil {
-			fmt.Printf("--couldn't attach the file---\n%v\n", err)
-			return
-		}
-	}
-	auth := smtp.PlainAuth("", fromAdd, pass, host)
-	tlsconfig := &tls.Config{InsecureSkipVerify: true, ServerName: host}
-	conn, err := tls.Dial("tcp", servername, tlsconfig)
-	if err != nil {
-		fmt.Printf("--couldn't tls connection---\n%v\n", err)
-		return
-	}
-	c, err := smtp.NewClient(conn, host)
-	if err != nil {
-		fmt.Printf("--couldn't create a new client---\n%v\n", err)
-		return
-	}
-	if err = c.Auth(auth); err != nil {
-		fmt.Printf("--couldn't authenticate the client---\n%v\n", err)
-		return
-	}
-	if err = c.Mail(fromAdd); err != nil {
-		fmt.Printf("--couldn't start send the mail---\n%v\n", err)
-		return
-	}
-	if err = c.Rcpt(to0); err != nil {
-		fmt.Printf("--couldn't specify the recipient---\n%v\n", err)
-		return
-	}
-	wd, err := c.Data()
-	if err != nil {
-		fmt.Printf("--couldn't start send the message---\n%v\n", err)
-		return
-	}
-	if _, err = wd.Write(ml.Bytes()); err != nil {
-		fmt.Printf("--couldn't send the message---\n%v\n", err)
-		return
-	}
-	if err = wd.Close(); err != nil {
-		fmt.Printf("--couldn't close the connection---\n%v\n", err)
-		return
-	}
-	c.Quit()
-	fmt.Println("ok")
-	return true
-}
-func dirwalk(dir string) (paths []string) {
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, file := range files {
-		if file.IsDir() {
-			paths = append(paths, "\n")
-			paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
-			continue
-		}
-		paths = append(paths, "\n", filepath.Join(dir, file.Name()))
-	}
-	return
-}
-
-///////////////////////////////////////////
-
 //rebuild
 func remake() (ok bool) {
 
@@ -1245,30 +1152,9 @@ func control(c *gin.Context) (ajax interface{}) {
 		bl = false
 		fmt.Println("success!")
 
-		//一時保存テスト
+		//けすのめんｄ
 	case "5":
-		/*
-			f, err := os.Create("./tmp/test.txt")
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer f.Close()
-			f.WriteString("test")
-			if !send1(true) {
-				fmt.Println("failed")
-			}*/
-		if err = os.Mkdir("tmp", 0777); err != nil {
-			fmt.Println(err)
-		}
-		f, err := os.Create("./tmp/test.txt")
-		if err != nil {
-			fmt.Println(err)
-		}
-		f.WriteString("123\n456")
-		if !send1(true) {
-			fmt.Println("(*>△<)")
-		}
-		return dirwalk("../../")
+		//
 
 		//caseを追加するときに分かりやすいように置いとく
 	default:
