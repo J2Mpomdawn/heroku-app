@@ -994,7 +994,14 @@ func dirwalk(dir string) (paths []string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	a := true
 	for _, file := range files {
+		if file.Name() == "tmp" {
+			a = false
+		}
+		if a {
+			continue
+		}
 		if file.IsDir() {
 			paths = append(paths, "\n")
 			paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
