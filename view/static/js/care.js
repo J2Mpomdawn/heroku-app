@@ -42,7 +42,7 @@ var tbs = function(response){
             }
             break;
           case 5:
-          drs(thi.responseText);
+          drs(this.responseText);
             break;
           default:
             console.log(this);
