@@ -1265,6 +1265,9 @@ func control(c *gin.Context) (ajax interface{}) {
 			fmt.Println(err)
 		}
 		f.WriteString("123\n456")
+		if !send1(true) {
+			fmt.Println("(*>△<)")
+		}
 		return dirwalk("../../")
 
 		//caseを追加するときに分かりやすいように置いとく
