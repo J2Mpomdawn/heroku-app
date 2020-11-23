@@ -19,7 +19,10 @@ var tbs = function(response){
         aj.firstElementChild.style.height="200px";
         aj.firstElementChild.style.overflowY="scroll";
       }
-    }
+    },
+    drs = function(response){
+      document.getElementById("directries").innerHTML=response;
+    },
     ajf = function(){
       const ajax = new XMLHttpRequest;
       ajax.open("POST","careajax",true);
@@ -37,6 +40,9 @@ var tbs = function(response){
               alert("入力ミス");
               return
             }
+            break;
+          case 5:
+          drs(thi.responseText);
             break;
           default:
             console.log(this);
