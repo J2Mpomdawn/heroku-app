@@ -823,6 +823,10 @@ func backup() (ok bool) {
 	}
 
 	//セーブ
+	if err = os.Mkdir("tmp", 0777); err != nil {
+		fmt.Printf("--couldn't make the dir---\n%v\n", err)
+		return
+	}
 	if err = xf.SaveAs("./tmp/datas.xlsx"); err != nil {
 		fmt.Printf("--couldn't save the file---\n%v\n", err)
 		return
