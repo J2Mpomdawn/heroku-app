@@ -6,24 +6,35 @@
         <link rel="icon" href="static/img/favicon.ico">
         <link rel="stylesheet" href="/static/css/calc1.css">
     </head>
+    <header>
+        <h3>goisgodにコピペするときは</h3>
+        <h3>"static"の前にスラッシュをつける</h3>
+    </header>
     <body>
         <h1>計算機</h1>
         <p>計算機(シミュレータ)</p>
-        <div id="gage">
+        <hr>
+        <p>レベル, 経験値, 元気は絶対入力する</p>
+        <div id="condition">
             <img src="/static/img/frame.png">
             <form onsubmit="return false;">
                 <input type="tel" id="lv" value="133" maxlength="3">
-                <input type="tel" id="exp" value="1937" maxlength="6">
-                <input type="tel" id="fn" value="130" maxlength="3">
+                <div id="e">
+                    <input type="tel" id="exp" value="1937" maxlength="6">
+                    <label for="exp" id="mexp">13250</label>
+                </div>
+                <div id="f">
+                    <input type="tel" id="fn" value="130" maxlength="3">
+                    <label for="fn" id="mfn">114</label>
+                </div>
                 <input type="tel" id="dia" value="25720" maxlength="7">
                 <input type="tel" id="tix" value="420" maxlength="3">
-                <input type="button" id="bt" value="bota">
             </form>
             <progress id="bar1" max="100" value="0"></progress>
             <progress id="bar2" max="100" value="0"></progress>
             <progress id="bar3" max="100" value="0"></progress>
+            <p id="now">20/11/25 19:48:31</p>
         </div>
-        <hr>
         <form onsubmit="return false;">
             <input type="time" id="tm" value="20:59" step="300" max="20:59">
             <label>
@@ -50,11 +61,8 @@
             </label>
             <input type="button" id="ksan" value="計算">
         </form>
+        <hr>
         <br>
-        <div id="tam">
-            <input type="tel" id="tame" value="193777"></input>
-            <label for="tame" id="ta">123456</label>
-        </div>
         <h2>結果はっぴょぉおお</h2>
         <div id="rsf">0</div>
         <div id="rsp">0</div>

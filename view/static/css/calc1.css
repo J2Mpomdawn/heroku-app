@@ -1,6 +1,167 @@
-#gage img {
-    width: 95%;
-    height: auto;
+#condition {
+    position:relative;
+}
+
+#condition img {
+    width: 342px;
+}
+
+#lv, #exp, #fn, #dia, #tix {
+    border: none;
+    background-color:transparent;
+    font-size:16px;
+    text-align:right;
+}
+
+#lv {
+    position:absolute;
+    top:0;
+    left:71px;
+    width:27px;
+    color: transparent;
+    text-shadow:0 0 0.6px #efefef;
+    transform:scale(0.78,0.73);
+}
+
+#e{
+    display:inline-block;
+    position:absolute;
+    top:12px;
+    left:10.2px;
+    width:102.5px;
+    text-align:right;
+    transform:scale(0.59,0.57);
+}
+
+#exp {
+    width:45px;
+    color: #5a5c59b8;
+    letter-spacing:-0.4px;
+    text-shadow:0 0 1px #555555;
+}
+
+#mexp {
+    display:inline-block;
+    margin-left:-7px;
+    color: #5a5c59b8;
+    font-family:'arial';
+    letter-spacing:-0.4px;
+    text-align:right;
+    text-shadow:0 0 1px #555555;
+}
+
+#f{
+    display:inline-block;
+    position:absolute;
+    top:12px;
+    left:129.2px;
+    text-align:right;
+    transform:scale(0.59,0.57);
+}
+
+#fn {
+    width:45px;
+    letter-spacing:-0.4px;
+}
+
+#mfn{
+    display:inline-block;
+    margin-left:-6.8px;
+    color:#4d5759e3;
+    font-family:'Arial';
+    letter-spacing:0.4px;
+    text-align:right;
+    text-shadow:0 0 1.5px #25452d;
+}
+
+#mexp::before,#mfn::before{
+    content:"/";
+}
+
+#dia {
+    position:absolute;
+    top:13px;
+    left:210px;
+    width:84px;
+    color: #5a5c59b8;
+    letter-spacing:1.2px;
+    text-align:center;
+    text-shadow:0 0 1.2px #555555;
+    transform:scale(0.6,0.62);
+}
+
+#tix {
+    position:absolute;
+    top:13px;
+    left:289px;
+    width:33px;
+    color: #5a5c59b8;
+    letter-spacing:1.2px;
+    text-align:center;
+    text-shadow:0 0 1.2px #555555;
+    transform:scale(0.6,0.62);
+}
+
+#lv:focus, #exp:focus, #fn:focus, #dia:focus, #tix:focus {
+    outline: none;
+}
+
+progress[id="bar1"] {
+    appearance: none;
+    width:95px;
+    height:10px;
+}
+
+#bar1::-webkit-progress-bar,#bar2::-webkit-progress-bar{
+    background-color:white;
+}
+
+#bar3::-webkit-progress-bar{
+    background-color:transparent;
+}
+
+#bar1 {
+    position:absolute;
+    top:18px;
+    left:3px;
+    z-index:-2;
+}
+
+#bar1::-webkit-progress-value{
+    background:linear-gradient(#ffadf8 45%,#ff88d7)
+}
+
+progress[id="bar2"],[id="bar3"] {
+    appearance: none;
+    width:95.2px;
+    height:9.4px;
+}
+
+#bar2,#bar3{
+    position:absolute;
+    top:18px;
+    left:101.2px;
+    z-index:-2;
+}
+
+#bar2::-webkit-progress-value{
+    background:linear-gradient(#7affa1 45%,#76fe7e)
+}
+
+#bar3::-webkit-progress-value{
+    background:linear-gradient(#f5d13c 48%,#ebb23a)
+}
+
+#now{
+    position:absolute;
+    top:-3.2px;
+    left:129px;
+    color: transparent;
+    font-size:8px;
+    font-family:'Arial';
+    letter-spacing:-0.3px;
+    text-shadow:0 0 0.6px #efefef;
+    transform:scaleX(0.9);
 }
 
 hr {
@@ -41,37 +202,4 @@ hr {
 
 #ncp::before {
     content: "ポイント:";
-}
-
-#lv:focus, #exp:focus, #fn:focus, #dia:focus, #tix:focus {
-    outline: none;
-}
-
-/*fn,exp用*/
-#tam {
-    background-color: blue;
-    text-align: right;
-    width: 38vw;
-    transform: scale(1.5);
-    position: relative;
-    left: 150px;
-}
-
-#tame {
-    border: none;
-    text-align: right;
-    background-color: red;
-    font-size: 5vw;
-    width: 46%
-}
-
-#ta {
-    background-color: green;
-    font-size: 5vw;
-    margin-left: -5.8px;
-    font-family: Arial;
-}
-
-#ta::before {
-    content: "/"
 }

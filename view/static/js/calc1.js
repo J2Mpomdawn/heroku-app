@@ -1,3 +1,26 @@
+var forcus = function() {
+    let l = document.getElementById(this.s)
+      , ll = l.value.length;
+    l.setSelectionRange(ll, ll);
+}
+  , clock = function() {
+    setInterval(function() {
+        let date = new Date();
+        document.getElementById("now").textContent = date.getFullYear() % 100 + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    }, 1000);
+};
+document.getElementById("mexp").addEventListener("click", {
+    handleEvent: forcus,
+    s: "exp"
+}, false);
+document.getElementById("mfn").addEventListener("click", {
+    handleEvent: forcus,
+    s: "fn"
+}, false);
+
+window.addEventListener("load", clock, false);
+
+/********************/
 var lv, exp, fn, dia, tix, wh, wm, of, cosm, pl, st, mfn, mi, kai, ka, kaif = (a)=>{
     kai = ((b3 % 2 === 0) ? 30 : 60) * a;
     ka = kai / a;
@@ -81,11 +104,13 @@ var fil = (a)=>{
     if (par <= 100) {
         dg("bar2").value = par;
         dg("bar3").value = 0;
-        dg("fn").style.textShadow = "0 0 0.5vw #373737";
+        dg("fn").style.color = "#4d5759e3";
+        dg("fn").style.textShadow = "0 0 1.5px #25452d";
     } else if (par <= 200) {
         dg("bar2").value = 100;
         dg("bar3").value = par - 100;
-        dg("fn").style.textShadow = "0 0 0.5vw #EB2659";
+        dg("fn").style.color = "#d55962b8";
+        dg("fn").style.textShadow = "0 0 1.5px #c34c56";
     } else {
         alert("out");
     }
@@ -264,7 +289,7 @@ dg("lv").addEventListener("change", fng, false);
 //dg("lv").addEventListener("change",()=>{dgt("fnm",sfnm(pas("lv")))},false);
 dg("exp").onchange = exg;
 dg("fn").onchange = fng;
-window.addEventListener("DOMContentLoaded", ()=>{
+window.addEventListener("load", function(){
     dg("dia").value = kanm(dg("dia").value)
 }
 , false);
@@ -279,6 +304,3 @@ dg("st").onclick = ost;
 dg("bc").onclick = obc;
 dg("bo").onclick = obo;
 dg("ksan").onclick = keisan;
-
-//var bt=document.getElementById("bt"),ta=document.getElementById("ta"),hen=()=>{ta.textContent="112233";};
-//bt.onclick=hen;
