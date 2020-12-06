@@ -1,81 +1,253 @@
-var forcus = function() {
-    let l = document.getElementById(this.s)
+/*******************
+  関数とか変数たち
+*******************/
+
+//省略
+const dg = function(a) {
+    return document.getElementById(a);
+}//経験値,元気のラベルを押したときにキャレットを末尾に設定
+  , forcus = function() {
+    const l = dg(this.s)
       , ll = l.value.length;
     l.setSelectionRange(ll, ll);
-}
+}//元気最大値があがるレベルリスト
+  , level = []
+  , maxfuns = function() {
+    const a = (b,c,d)=>{
+        while (b < c) {
+            b += d;
+            level.push(b);
+        }
+    }
+    ;
+    a(0, 58, 2);
+    a(57, 147, 3);
+    a(146, 422, 4);
+    a(421, 581, 5);
+    a(580, 700, 6);
+}//レベルに対する元気の最大値
+  , maxfun = function(a) {
+    return (a < 700) ? level.map(b=>a - b).filter(c=>c >= 0).length + 60 : 240;
+}//次のレベルまでの経験値
+  , nextlevel = function(a, b) {
+    return (a - 1) * 100 + 50 - b;
+}//元気ゲージ
+  , fnbar = function() {
+    const mf = maxfun(dg("lv").value)
+      , par = 100 * dg("fn").value / mf;
+    dg("mfn").textContent = mf;
+    if (par <= 100) {
+        dg("bar2").value = par;
+        dg("bar3").value = 0;
+        dg("fn").style.color = "#4d5759e3";
+        dg("fn").style.textShadow = "0 0 1.5px #25452d";
+    } else if (par <= 200) {
+        dg("bar2").value = 100;
+        dg("bar3").value = par - 100;
+        dg("fn").style.color = "#d55962b8";
+        dg("fn").style.textShadow = "0 0 1.5px #c34c56";
+    } else {
+        alert("out");
+    }
+}//経験値ゲージ
+  , exbar = function() {
+    const nx = nextlevel(dg("lv").value, 0)
+      , par = 100 * dg("exp").value / nx;
+    dg("mexp").textContent = nx;
+    if (par < 100) {
+        dg("bar1").value = par;
+    } else {
+        alert("out");
+    }
+}//半角
+  , half = function(a) {
+    return a.replace(/[！-～]/g, b=>String.fromCharCode(b.charCodeAt(0) - 0xFEE0));
+}//3桁区切り
+  , separate = function(a) {
+    if (a === "") {
+        alert("空っぽ");
+        return "";
+    }
+    a = half(a).replace(/,/g, "").trim();
+    if (!/^[+|-]?(\d*)(\.\d+)?$/.test(a)) {
+        alert("数字を入力するべき");
+        return a
+    }
+    return new Intl.NumberFormat().format(Math.round(a));
+}//時計
   , clock = function() {
-    setInterval(function() {
-        let date = new Date();
-        document.getElementById("now").textContent = date.getFullYear() % 100 + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-    }, 1000);
+    setInterval(()=>{
+        const date = new Date();
+        dg("now").textContent = date.getFullYear() % 100 + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    }
+    , 1000);
 };
-document.getElementById("mexp").addEventListener("click", {
+//10,20,30の箱
+let i1, i2, i3;
+//元気の横のボタンを押したら使用アイテム欄を表示
+const open = function() {
+    i1 = +document.querySelector("#ener>:nth-child(2)").value;
+    i2 = +document.querySelector("#ener>:nth-child(3)").value;
+    i3 = +document.querySelector("#ener>:nth-child(4)").value;
+    document.getElementById("ener").style.display = "block";
+}//キャンセル
+  , cancel = function() {
+    document.querySelector("#ener>:nth-child(2)").value = i1;
+    document.querySelector("#ener>:nth-child(3)").value = i2;
+    document.querySelector("#ener>:nth-child(4)").value = i3;
+    setTimeout(()=>{
+        dg("ener").style.display = "none"
+    }
+    , 200);
+}//使用アイテムリセット
+  , clear = function() {
+    document.querySelector("#ener>:nth-child(2)").value = 0;
+    document.querySelector("#ener>:nth-child(3)").value = 0;
+    document.querySelector("#ener>:nth-child(4)").value = 0;
+}//使用アイテム保存
+  , use = function() {
+    i1 = +document.querySelector("#ener>:nth-child(2)").value;
+    i2 = +document.querySelector("#ener>:nth-child(3)").value;
+    i3 = +document.querySelector("#ener>:nth-child(4)").value;
+    setTimeout(()=>{
+        dg("ener").style.display = "none"
+    }
+    , 200);
+}//ボタンの文字達
+  , bvs = [{
+    s: "le",
+    b: false,
+    t: "ライブ",
+    f: "お仕事"
+}, {
+    s: "bc",
+    b: false,
+    t: "１倍",
+    f: "２倍"
+}, {
+    s: "st",
+    b: false,
+    t: "シアター",
+    f: "ツアー"
+}, {
+    s: "iN",
+    b: false,
+    t: "自然回復分を含める",
+    f: "自然回復分を含めない"
+}]
+  , switchButton = function() {
+    const bv = bvs[this.n];
+    if (bv.b) {
+        dg(bv.s).value = bv.t;
+    } else {
+        dg(bv.s).value = bv.f;
+    }
+    if (this.n === 2) {
+        dg("bi").options[2] = null;
+        const td = document.createElement("option");
+        if (bv.b) {
+            td.value = 3;
+            td.appendChild(document.createTextNode("３倍"));
+        } else {
+            td.value = 4;
+            td.appendChild(document.createTextNode("４倍"));
+        }
+        dg("bi").appendChild(td);
+    }
+    bv.b = !bv.b;
+};
+
+/*************
+  関数の実行
+*************/
+
+//読み込み時
+window.addEventListener("load", function() {
+    clock();
+    maxfuns();
+    fnbar();
+    exbar();
+    dg("dia").value = separate(dg("dia").value);
+}, false);
+
+//forcus実行>経験値
+dg("mexp").addEventListener("click", {
     handleEvent: forcus,
     s: "exp"
 }, false);
-document.getElementById("mfn").addEventListener("click", {
+
+//forcus実行>元気
+dg("mfn").addEventListener("click", {
     handleEvent: forcus,
     s: "fn"
 }, false);
 
-window.addEventListener("load", clock, false);
+//fn,ex bar実行>レベル
+dg("lv").addEventListener("change", function() {
+    fnbar();
+    exbar();
+});
+
+//fnbar実行>元気
+dg("fn").addEventListener("change", fnbar, false);
+
+//exbar実行>経験値
+dg("exp").addEventListener("change", exbar, false);
+
+//separate実行
+dg("dia").addEventListener("blur", function() {
+    this.value = separate(this.value);
+}, false);
+
+//フォーカスしたらコンマ消す
+dg("dia").addEventListener("focus", function() {
+    this.value = this.value.replace(/,/g, "");
+}, false);
+
+//open実行
+dg("fns").addEventListener("click", open, false);
+
+//cancel実行
+dg("ca").addEventListener("click", cancel, false);
+
+//clear実行
+dg("cl").addEventListener("click", clear, false);
+
+//use実行
+dg("us").addEventListener("click", use, false);
+
+//switchButton>ライブ
+dg("le").addEventListener("click", {
+    handleEvent: switchButton,
+    n: 0
+}, false);
+
+//switchButton>１倍
+dg("bc").addEventListener("click", {
+    handleEvent: switchButton,
+    n: 1
+}, false);
+
+//switchButton>シアター
+dg("st").addEventListener("click", {
+    handleEvent: switchButton,
+    n: 2
+}, false);
+
+//switchButton>含める
+dg("iN").addEventListener("click", {
+    handleEvent: switchButton,
+    n: 3
+}, false);
+
+/********************/
 
 /********************/
 var lv, exp, fn, dia, tix, wh, wm, of, cosm, pl, st, mfn, mi, kai, ka, kaif = (a)=>{
     kai = ((b3 % 2 === 0) ? 30 : 60) * a;
     ka = kai / a;
 }
-, gtps, iv, cm, ivsm, mi, gte, ec, ei, ps, Lv, Exp, Fn, Mi, Mfn, Pl, Gte, Ps, Cosm, Ivsm, Cufn, level = [], fnm, cufn, par, dg = (a)=>document.getElementById(a), pas = (a)=>parseInt(dg(a).value), dsa = (a,b)=>dg(a).setAttribute("value", b), dgt = (a,b)=>dg(a).textContent = b, b1 = 0, b2 = 0, b3 = 0, b4 = 0, ole = ()=>{
-    if (b1 % 2 === 0) {
-        dsa("le", "お仕事");
-    } else {
-        dsa("le", "ライブ");
-    }
-    b1++;
-}
-, ost = ()=>{
-    let ni;
-    if (dg("bi").options[2].selected) {
-        ni = 0;
-    }
-    if (b2 % 2 === 0) {
-        dsa("st", "ツアー");
-        dg("bi").options[2] = null;
-        let tb = document.createElement("option");
-        tb.value = 3;
-        let tex = document.createTextNode("３倍");
-        tb.appendChild(tex);
-        dg("bi").appendChild(tb);
-    } else {
-        dsa("st", "シアター");
-        dg("bi").options[2] = null;
-        let tb = document.createElement("option");
-        tb.value = 4;
-        let tex = document.createTextNode("４倍");
-        tb.appendChild(tex);
-        dg("bi").appendChild(tb);
-    }
-    if (ni === 0) {
-        dg("bi").options[2].selected = true;
-    }
-    b2++;
-}
-, obc = ()=>{
-    if (b3 % 2 === 0) {
-        dsa("bc", "２倍");
-    } else {
-        dsa("bc", "１倍");
-    }
-    b3++;
-}
-, obo = ()=>{
-    if (b4 % 2 === 0) {
-        dsa("bo", "自然回復分を含める");
-    } else {
-        dsa("bo", "自然回復分を含めない");
-    }
-    b4++;
-}
+, gtps, iv, cm, ivsm, mi, gte, ec, ei, ps, Lv, Exp, Fn, Mi, Mfn, Pl, Gte, Ps, Cosm, Ivsm, Cufn, fnm, cufn, par, pas = (a)=>parseInt(dg(a).value), dsa = (a,b)=>dg(a).setAttribute("value", b), dgt = (a,b)=>dg(a).textContent = b, b1 = 0, b2 = 0, b3 = 0, b4 = 0
 , yoso = (a,b,c)=>{
     while (a < b) {
         a += c;
@@ -83,12 +255,6 @@ var lv, exp, fn, dia, tix, wh, wm, of, cosm, pl, st, mfn, mi, kai, ka, kaif = (a
     }
 }
 ;
-yoso(0, 58, 2);
-yoso(57, 147, 3);
-yoso(146, 422, 4);
-yoso(421, 581, 5);
-yoso(580, 700, 6);
-
 var fil = (a)=>{
     hiki = level.map(function(b) {
         return a - b;
@@ -100,6 +266,7 @@ var fil = (a)=>{
 }
   , sfnm = (a)=>(a < 700) ? (level.indexOf(a - fil(a)) + 61) : 240
   , fng = ()=>{
+    dg("mfn").textContent = sfnm(pas("lv"));
     par = 100 * pas("fn") / sfnm(pas("lv"));
     if (par <= 100) {
         dg("bar2").value = par;
@@ -118,6 +285,7 @@ var fil = (a)=>{
   , nx = (a,b)=>(a - 1) * 100 + 50 - b
 
   , exg = ()=>{
+    dg("mexp").textContent = nx(pas("lv"), 0);
     par = 100 * pas("exp") / nx(pas("lv"), 0);
     if (par < 100) {
         dg("bar1").value = par;
@@ -283,24 +451,4 @@ var fil = (a)=>{
 
 }
 
-dg("lv").addEventListener("change", exg, false);
-dg("lv").addEventListener("change", fng, false);
-//dg("lv").addEventListener("change",()=>{dgt("nx",nx(pas("lv"),0))},false);
-//dg("lv").addEventListener("change",()=>{dgt("fnm",sfnm(pas("lv")))},false);
-dg("exp").onchange = exg;
-dg("fn").onchange = fng;
-window.addEventListener("load", function(){
-    dg("dia").value = kanm(dg("dia").value)
-}
-, false);
-dg("dia").addEventListener("blur", function() {
-    this.value = kanm(this.value)
-}, false);
-dg("dia").addEventListener("focus", function() {
-    this.value = kesu(this.value)
-}, false);
-dg("le").onclick = ole;
-dg("st").onclick = ost;
-dg("bc").onclick = obc;
-dg("bo").onclick = obo;
 dg("ksan").onclick = keisan;

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1.0">
         <title>K3KI</title>
-        <link rel="icon" href="static/img/favicon.ico">
+        <link rel="icon" href="/static/img/favicon.ico">
         <link rel="stylesheet" href="/static/css/calc1.css">
     </head>
     <header>
@@ -27,13 +27,23 @@
                     <input type="tel" id="fn" value="130" maxlength="3">
                     <label for="fn" id="mfn">114</label>
                 </div>
+                <input type="image" id="fns" src="/static/img/button.png">
+                <div id="ener">
+                    <img src="/static/img/item.png">
+                    <input type="tel" maxlength="3" value="1">
+                    <input type="tel" maxlength="3" value="2">
+                    <input type="tel" maxlength="3" value="3">
+                    <input type="image" id="ca" src="/static/img/cancel.png">
+                    <input type="image" id="cl" src="/static/img/clear.png">
+                    <input type="image" id="us" src="/static/img/use.png">
+                </div>
                 <input type="tel" id="dia" value="25720" maxlength="7">
                 <input type="tel" id="tix" value="420" maxlength="3">
             </form>
             <progress id="bar1" max="100" value="0"></progress>
             <progress id="bar2" max="100" value="0"></progress>
             <progress id="bar3" max="100" value="0"></progress>
-            <p id="now">20/11/25 19:48:31</p>
+            <p id="now"></p>
         </div>
         <form onsubmit="return false;">
             <input type="time" id="tm" value="20:59" step="300" max="20:59">
@@ -43,14 +53,14 @@
             </label>
             <input type="button" id="le" value="ライブ">
             <input type="button" id="bc" value="１倍">
+            <input type="button" id="st" value="シアター">
             <select id="bi">
               <option value="1">１倍</option>
               <option value="2">２倍</option>
               <option id ="bai" value="4">４倍</option>
             </select>
 
-            <input type="button" id="bo" value="自然回復分を含める">
-            <input type="button" id="st" value="シアター">
+            <input type="button" id="iN" value="自然回復分を含める">
             <label>
                 イベ期間
                 <select id="kika">
@@ -61,6 +71,10 @@
             </label>
             <input type="button" id="ksan" value="計算">
         </form>
+        <br>
+        <hr>
+            <h4>lab.</h4>
+        <br>
         <hr>
         <br>
         <h2>結果はっぴょぉおお</h2>

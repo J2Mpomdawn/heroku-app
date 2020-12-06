@@ -1,5 +1,14 @@
+html,input{
+    font-size:16px;
+}
+
+hr {
+    background-color: #533b3b;
+}
+
 #condition {
     position:relative;
+    z-index:0;
 }
 
 #condition img {
@@ -9,7 +18,6 @@
 #lv, #exp, #fn, #dia, #tix {
     border: none;
     background-color:transparent;
-    font-size:16px;
     text-align:right;
 }
 
@@ -26,7 +34,7 @@
 #e{
     display:inline-block;
     position:absolute;
-    top:12px;
+    top:11px;
     left:10.2px;
     width:102.5px;
     text-align:right;
@@ -53,8 +61,9 @@
 #f{
     display:inline-block;
     position:absolute;
-    top:12px;
+    top:11px;
     left:129.2px;
+    width:80.4px;
     text-align:right;
     transform:scale(0.59,0.57);
 }
@@ -76,6 +85,82 @@
 
 #mexp::before,#mfn::before{
     content:"/";
+}
+
+#fns{
+    position:absolute;
+    top:-33.3px;
+    left:163px;
+    transform:scale(0.2127);
+    }
+
+#fns:active{
+    -webkit-tap-highlight-color:transparent;
+    transform:scale(0.2127) translateY(3px);
+}
+
+#ener{
+    display:none;
+    position:absolute;
+    top:-175px;
+    left:50px;
+    width:130px;
+    background-color:blue;
+    z-index:1;
+}
+
+#ener img{
+    position:absolute;
+    transform:scale(0.65);
+}
+
+#ener [type="tel"]{
+    position:absolute;
+    left:228px;
+    width:40px;
+    margin:0;
+    padding:0;
+    border:none;
+    background-color:transparent;
+    color:transparent;
+    text-align:center;
+    text-shadow:0 0 0.7px #e8e4e4;
+    transform:scale(0.55);
+}
+
+#ener > :nth-child(2){
+    top:65.1px;
+}
+
+#ener > :nth-child(3){
+    top:96px;
+}
+
+#ener > :nth-child(4){
+    top:126px;
+}
+
+#ca,#cl,#us{
+    position:absolute;
+    top:152px;
+    width:53.2px;
+}
+
+#ca{
+    left:89.8px;
+}
+
+#cl{
+    left:145px;
+}
+
+#us{
+    left:200px;
+}
+
+#ener > [type="image"]:active{
+    -webkit-tap-highlight-color:transparent;
+    transform:translateY(0.8px);
 }
 
 #dia {
@@ -102,11 +187,11 @@
     transform:scale(0.6,0.62);
 }
 
-#lv:focus, #exp:focus, #fn:focus, #dia:focus, #tix:focus {
+input:focus {
     outline: none;
 }
 
-progress[id="bar1"] {
+[id="bar1"] {
     appearance: none;
     width:95px;
     height:10px;
@@ -124,14 +209,14 @@ progress[id="bar1"] {
     position:absolute;
     top:18px;
     left:3px;
-    z-index:-2;
+    z-index:-1;
 }
 
 #bar1::-webkit-progress-value{
     background:linear-gradient(#ffadf8 45%,#ff88d7)
 }
 
-progress[id="bar2"],[id="bar3"] {
+[id="bar2"],[id="bar3"] {
     appearance: none;
     width:95.2px;
     height:9.4px;
@@ -141,7 +226,7 @@ progress[id="bar2"],[id="bar3"] {
     position:absolute;
     top:18px;
     left:101.2px;
-    z-index:-2;
+    z-index:-1;
 }
 
 #bar2::-webkit-progress-value{
@@ -162,10 +247,6 @@ progress[id="bar2"],[id="bar3"] {
     letter-spacing:-0.3px;
     text-shadow:0 0 0.6px #efefef;
     transform:scaleX(0.9);
-}
-
-hr {
-    background-color: #533b3b;
 }
 
 #rsf::before {
