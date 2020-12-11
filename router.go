@@ -216,10 +216,15 @@ label:
 				pe.Period = start.Format("2006/01/02") + "~" + end.Format("2006/01/02")
 				pe.Times = twt
 
-				//データベースに登録
+				//既にあるかチェック
 				db := gormcore()
-				//db.Table("list").CreateTable(&period{})
-				db.Table("list").Save(&pe)
+				che := struct{ Name string }{}
+				db.Table("list").Select("name").Where("name=?", eventname).Order("num desc").First(&che)
+
+				//なかったら登録
+				if che.Name == "" {
+					db.Table("list").Save(&pe)
+				}
 				db.Close()
 			}
 
