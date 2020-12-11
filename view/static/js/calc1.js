@@ -1,8 +1,11 @@
+/*///////////////////////////////////////////////////
+　　　　　　　　　　　入力欄関連
+///////////////////////////////////////////////////*/
 /*******************
   関数とか変数たち
 *******************/
 
-//省略
+//documentget省略
 const dg = function(a) {
     return document.getElementById(a);
 }//経験値,元気のラベルを押したときにキャレットを末尾に設定
@@ -26,9 +29,7 @@ const dg = function(a) {
     a(421, 581, 5);
     a(580, 700, 6);
 }//レベルに対する元気の最大値
-  , maxfun = function(a) {
-    return (a < 700) ? level.map(b=>a - b).filter(c=>c >= 0).length + 60 : 240;
-}//次のレベルまでの経験値
+  , maxfun = a=>(a < 700) ? level.map(b=>a - b).filter(c=>c >= 0).length + 60 : 240//次のレベルまでの経験値
   , nextlevel = function(a, b) {
     return (a - 1) * 100 + 50 - b;
 }//元気ゲージ
@@ -146,10 +147,10 @@ const open = function() {
         dg("bi").options[2] = null;
         const td = document.createElement("option");
         if (bv.b) {
-            td.value = 3;
+            td.value = 4;
             td.appendChild(document.createTextNode("３倍"));
         } else {
-            td.value = 4;
+            td.value = 3;
             td.appendChild(document.createTextNode("４倍"));
         }
         dg("bi").appendChild(td);
@@ -240,15 +241,96 @@ dg("iN").addEventListener("click", {
     n: 3
 }, false);
 
-/********************/
+/*///////////////////////////////////////////////////
+　　　　　　　　　　　計算機関連
+///////////////////////////////////////////////////*/
+//お仕事結果
+const tot = 946
+  , cir = 56
+  , squ = 46
+  , tri = 153;
 
 /********************/
+let lv, lV = 0;
+let exp, exP = 0;
+let gte, gtE = 0;
+let cufn = 0;
+let mag = (bvs[1].b) ? {
+    f: 60,
+    t: 10
+} : {
+    f: 30,
+    t: 10
+};
+let coltms = 0;
+let reqfn = 0;
+let fnm = 0;
+let im = 0;
+let st = (bvs[2].b) ? {
+    gic: 6 * ((bvs[1].b) ? 2 : 1),
+    ri: 20 * dg("bi").value,
+    gpe: 720 * dg("bi").value
+} : {
+    gic: ip = ((bvs[0].b) ? 59.5 : 85) * ((bvs[1].b) ? 2 : 1),
+    ri: 180 * dg("bi").value,
+    gpe: 537 * dg("bi").value
+};
+let ivtms = 0;
+let ps = 0;
+/*********************/
+
+//お仕事の時のポイント(ツアー)
+const randomp = a=>{
+    let rps;
+    for (let i = 0; i < a; i++) {
+        const rn = Math.random()
+          , rp = (rn > (cir + squ + tri) / tot) ? 48 : (rn > (cir + squ) * 0.7 / tot) ? 65 : 84;
+        rps += rp;
+    }
+    return rps;
+}
+//レベルアップ元気回復
+  , recovery = ()=>{
+    while (nextlevel(lv, exp) > gte) {
+        gte -= nextlevel(lv, exp);
+        expp = 0;
+        lv++;
+        cufn += maxfun(lv);
+    }
+}
+//計算機能
+  , calc = (a,b)=>{
+    const ok = ((a + fnm) < mag.f) ? true : false
+    const coltm = (ok) ? mag.t : Math.floor((a + fnm) / mag.f);
+    coltms += coltm;
+    reqfn += (ok) ? mag.f * mag.t : 0;
+    fnm = (a + fnm) % mag.f;
+    const gti = Math.floor(stt.gic * coltm) + im;
+    const gtpc = ((bvs[2].b) ? ((bvs[0].b) ? randomp(coltm) : 140) : ((bvs[0].b) ? 59.5 : 85)) * ((bvs[1].b) ? 2 : 1) * coltm;
+    const ivtm = Math.floor(gti / stt.ri);
+    ivtms += ivtm;
+    im = gti % stt.ri;
+    const gtpe = stt.gpe * ivtm;
+    gte += (306 * (coltm + ivtm) + b);
+    ps += (gtpc + gtpe);
+    ps = 0;
+}
+//実行
+  , run = function() {
+    lv = lV = +dg("lv").value;
+    exp = exP = +dg("exp").value;
+};
+
+dg("a").addEventListener("click", function() {
+    run();
+    console.log(lv,lV,exp,exP);
+}, false);
+/*
 var lv, exp, fn, dia, tix, wh, wm, of, cosm, pl, st, mfn, mi, kai, ka, kaif = (a)=>{
     kai = ((b3 % 2 === 0) ? 30 : 60) * a;
     ka = kai / a;
 }
-, gtps, iv, cm, ivsm, mi, gte, ec, ei, ps, Lv, Exp, Fn, Mi, Mfn, Pl, Gte, Ps, Cosm, Ivsm, Cufn, fnm, cufn, par, pas = (a)=>parseInt(dg(a).value), dsa = (a,b)=>dg(a).setAttribute("value", b), dgt = (a,b)=>dg(a).textContent = b, b1 = 0, b2 = 0, b3 = 0, b4 = 0
-, yoso = (a,b,c)=>{
+, gtps, iv, cm, ivsm, mi, gte, ec, ei, ps, Lv, Exp, Fn, Mi, Mfn, Pl, Gte, Ps, Cosm, Ivsm, Cufn, fnm, cufn, par, pas = (a)=>parseInt(dg(a).value), dsa = (a,b)=>dg(a).setAttribute("value", b), dgt = (a,b)=>dg(a).textContent = b, b1 = 0, b2 = 0, b3 = 0, b4 = 0, yoso = (a,b,c)=>{
     while (a < b) {
         a += c;
         level.push(a);
@@ -265,54 +347,9 @@ var fil = (a)=>{
     return Math.min.apply({}, sa);
 }
   , sfnm = (a)=>(a < 700) ? (level.indexOf(a - fil(a)) + 61) : 240
-  , fng = ()=>{
-    dg("mfn").textContent = sfnm(pas("lv"));
-    par = 100 * pas("fn") / sfnm(pas("lv"));
-    if (par <= 100) {
-        dg("bar2").value = par;
-        dg("bar3").value = 0;
-        dg("fn").style.color = "#4d5759e3";
-        dg("fn").style.textShadow = "0 0 1.5px #25452d";
-    } else if (par <= 200) {
-        dg("bar2").value = 100;
-        dg("bar3").value = par - 100;
-        dg("fn").style.color = "#d55962b8";
-        dg("fn").style.textShadow = "0 0 1.5px #c34c56";
-    } else {
-        alert("out");
-    }
-}
+
   , nx = (a,b)=>(a - 1) * 100 + 50 - b
 
-  , exg = ()=>{
-    dg("mexp").textContent = nx(pas("lv"), 0);
-    par = 100 * pas("exp") / nx(pas("lv"), 0);
-    if (par < 100) {
-        dg("bar1").value = par;
-    } else {
-        alert("out");
-    }
-}
-  , kanm = (a)=>{
-    if (a === '') {
-        return '';
-    }
-    a = han(a).replace(/,/g, "").trim();
-    if (!/^[+|-]?(\d*)(\.\d+)?$/.test(a)) {
-        return a;
-    }
-    var b = Math.round(a);
-    return new Intl.NumberFormat().format(b);
-}
-  , kesu = (c)=>{
-    return c.replace(/,/g, "");
-}
-  , han = (c)=>{
-    var d = c.replace(/[！-～]/g, function(e) {
-        return String.fromCharCode(e.charCodeAt(0) - 0xFEE0);
-    });
-    return d;
-}
   , rgtp = (a)=>{
     for (i = 0; i < a; i++) {
         let ra = Math.random();
@@ -452,3 +489,4 @@ var fil = (a)=>{
 }
 
 dg("ksan").onclick = keisan;
+*/
