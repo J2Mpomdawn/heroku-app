@@ -1,4 +1,4 @@
-module ts
+module internal
 
 go 1.13
 
