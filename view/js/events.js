@@ -95,7 +95,7 @@ window.addEventListener("load", function(){
   listrans();
   const img = document.createElement("img");
   img.setAttribute("id","back");
-  img.setAttribute("src","/static/img/1041uuu1.gif");
+  img.setAttribute("src","/view/img/1041uuu1.gif");
   img.setAttribute("width",document.getElementsByClassName("table")[0].getBoundingClientRect().width);
   img.setAttribute("height",document.getElementsByClassName("table")[0].getBoundingClientRect().height);
   idt.children[0].insertBefore(img,thd);
