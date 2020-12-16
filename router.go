@@ -1,11 +1,13 @@
-package organs
+package ts
 
 import (
 	"crypto/tls"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"net/mail"
 	"net/smtp"
+	"net/url"
 	"os"
 	"reflect"
 	"strconv"
@@ -13,22 +15,107 @@ import (
 	"time"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/ChimeraCoder/anaconda"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/joho/godotenv"
 	"github.com/scorredoira/email"
 )
 
+type postime struct {
+	h rune
+	m bool
+}
+
+type post struct {
+	//name...イベント名(開始日をもとに作成した番号を名前とする)
+	Name string `gorm:"type:smallint unsigned"`
+	//num...投稿時間
+	Num int `gorm:"type:smallint unsigned"`
+	//100~50000位
+	One, Two, Three, Four, Five, Six string `gorm:"type:mediumint unsigned"`
+}
+
+type period struct {
+	//番号
+	Num string `gorm:"type:smallint unsigned PRIMARY KEY"`
+	//name...イベント名
+	Name string `gorm:"type:varchar(60)"`
+	//period...開催期間
+	Period string `gorm:"type:char(21)"`
+	//times...データの数
+	Times int `gorm:"type:smallint unsigned"`
+	//done...整理状況
+	//0:未使用, 1:記録済(不足), 2:記録済(充足)
+	Done int `gorm:"type:tinyint default 0"`
+}
+
+var (
+	bl                    bool
+	m, fwt, twt           int
+	poh                   rune
+	tweet, eventname, pri string
+	start, end            time.Time
+	err                   error
+	dates, twlog          []string = make([]string, 14), make([]string, 4)
+	ru, r                 []rune
+	krn, kk, kig          []int = make([]int, 6), make([]int, 6), make([]int, 6)
+	poti                  postime
+	pt                    post
+)
+
+//ツイート取得準備
+func setconf() (api *anaconda.TwitterApi, v url.Values) {
+
+	//apiの設定
+	//本番か開発かで設定を変える
+	/*if os.Getenv("PORT") == "" {
+		if err = godotenv.Load("dev.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
+	}*/
+	anaconda.SetConsumerKey(os.Getenv("ConsumerKey"))
+	anaconda.SetConsumerSecret(os.Getenv("ConsumerSecret"))
+	api = anaconda.NewTwitterApi(os.Getenv("AccessToken"), os.Getenv("AccessTokenSecret"))
+
+	//とるのはテキストBOTさんの投稿、上から4個
+	v = url.Values{}
+	v.Set("screen_name", "imas_ml_td_t")
+	v.Set("count", "4")
+	return
+}
+
+//データベースの準備
+func gormcore() *gorm.DB {
+
+	//mysqlの設定
+	//本番か開発かで設定を変える
+	protocol := "tcp(" + os.Getenv("DB_HOSTNAME") + ":3306)"
+	if os.Getenv("PORT") == "8080" {
+		protocol = ""
+	}
+	db, err := gorm.Open("mysql", os.Getenv("DB_USERNAME")+
+		":"+os.Getenv("DB_PASSWORD")+"@"+protocol+"/"+os.Getenv("DB_NAME"))
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
+}
+
 //通知の処理
-func tuti(tweet []rune) {
+func tuti() {
 label:
-	for a, z := range tweet {
-		if a == len(tweet)-14 {
+	for a, v := range ru {
+		if a == len(ru)-14 {
 			break
 		}
 
 		//"MILLION LIVE W"か"ミリコレ"ならm=8
-		if reflect.DeepEqual(tweet[a:a+4], []rune{12511, 12522, 12467, 12524}) || reflect.DeepEqual(tweet[a:a+14], []rune{77, 73, 76, 76, 73, 79, 78, 32, 76, 73, 86, 69, 32, 87}) {
+		if reflect.DeepEqual(ru[a:a+4], []rune{12511, 12522, 12467, 12524}) || reflect.DeepEqual(ru[a:a+14], []rune{77, 73, 76, 76, 73, 79, 78, 32, 76, 73, 86, 69, 32, 87}) {
 			m = 8
 		}
-		switch z {
+		switch v {
 
 		//"「"の場所を記録
 		case 12300:
@@ -38,12 +125,12 @@ label:
 		case 12301:
 
 			//既に記録されてたら以降の処理はスルー
-			if string(tweet[poti.h+1:a]) == ename {
+			if string(ru[poti.h+1:a]) == eventname {
 				continue
 
 				//新イベならeventnameを上書き
 			} else {
-				ename = string(tweet[poti.h+1 : a])
+				eventname = string(ru[poti.h+1 : a])
 			}
 
 			//mをもとに処理を分岐
@@ -63,7 +150,7 @@ label:
 			}
 
 			//最終日を取得
-			end, err := time.Parse("2006/1/2 15:04", string(tweet[a+7:a+23]))
+			end, err = time.Parse("2006/1/2 15:04", string(ru[a+7:a+23]))
 
 			if err != nil {
 				fmt.Printf("--couldn't set LD---\n%v\n", err)
@@ -72,38 +159,46 @@ label:
 			//"ミリコレ"か"WORKING"なら最終日まで待つ
 			if m == 9 {
 				ato := -time.Since(end.Add(-539 * time.Minute))
-				fmt.Printf("イベント名「%s」\n", ename)
+				fmt.Printf("イベント名「%s」\n", eventname)
 				fmt.Printf("次のイベントまであと %v\n", ato)
+				/*
+					ほんまに実装するときはatoとfmt二つ消して
+					time.sleep(ato)を
+					time.Sleep(-time.Since(end.Add(-539 * time.Minute)))
+					↑こうする
+
+					なんかこのままでもいいような気がしてきた
+				*/
 				time.Sleep(ato)
 				m = 11
 				return
 
 				//それ以外のイベントのとき
-			} else {
+			} else if m == 10 {
 
 				//開始日を取得
-				start, err := time.Parse("2006/1/2 15", string(tweet[a-13:a]))
+				start, err = time.Parse("2006/1/2 15", string(ru[a-13:a]))
 				if err != nil {
 					fmt.Printf("--couldn't set SD---\n%v\n", err)
 				}
 
 				//イベントの日付を記録
-				dates = make([]string, 14)
-				b := 0
-				for ; b <= end.Day()-start.Day(); b++ {
-					day := start.AddDate(0, 0, b).Day()
+				dates = make([]string, 13)
+				bb := 0
+				for ; bb <= end.Day()-start.Day(); bb++ {
+					day := start.AddDate(0, 0, bb).Day()
 					day1 := day/10 + 48
 					day2 := day%10 + 48
 					if day < 10 {
 						day1 = 48
 						day2 = day + 48
 					}
-					dates[b] = string([]byte{byte(day1), byte(day2)})
+					dates[bb] = string([]byte{byte(day1), byte(day2)})
 				}
 
 				//fwtとtwtを記録
 				fwt = start.Hour() << 1
-				twt = ((b-1)*24+end.Add(1*time.Minute).Hour())<<1 - fwt
+				twt = ((bb-1)*24+end.Add(1*time.Minute).Hour())<<1 - fwt
 
 				//2019/12/01を最初の日とする
 				birth, err := time.Parse("2006/01/02", "2019/12/01")
@@ -117,47 +212,66 @@ label:
 				//イベントの名前と期間とプリキーをセット
 				pe := period{}
 				pe.Num = pri
-				pe.Name = ename
+				pe.Name = eventname
 				pe.Period = start.Format("2006/01/02") + "~" + end.Format("2006/01/02")
 				pe.Times = twt
 
 				//既にあるかチェック
+				db := gormcore()
 				che := struct{ Name string }{}
-				db.Table("list").Select("name").Where("name=?", ename).Order("num desc").First(&che)
+				db.Table("list").Select("name").Where("name=?", eventname).Order("num desc").First(&che)
 
 				//なかったら登録
 				if che.Name == "" {
 					db.Table("list").Save(&pe)
 				}
+				db.Close()
 			}
+
 			break label
 		}
 	}
 }
 
 //ツイートの取得と加工
-func tweektweets() {
+func gettweets(api *anaconda.TwitterApi, v url.Values) {
 
 	//イベントの日付が記録されてなかったら
 	if dates[0] == "" {
 
 		//通知BOTさんの最新の投稿を取得
-		tweet, err := twiapi.GetUserTimeline(twiv_i)
+		v.Set("screen_name", "imas_ml_td_i")
+		v.Set("count", "2")
+		twii, err := api.GetUserTimeline(v)
 		if err != nil {
 			fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		}
 
 		//改行コードを"\n"に統一
-		twee := strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(tweet[0].FullText)
+		//「折り返し」が入ってたら一個前の投稿を使う
+		if strings.Contains(twii[0].FullText, "折り返し") {
+			tweet = strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(twii[1].FullText)
+		} else {
+			tweet = strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(twii[0].FullText)
+		}
 
 		//rune配列に変換して通知の処理
-		tweer := []rune(twee)
+		ru = []rune(tweet)
 		poti.m = false
-		tuti(tweer)
+		tuti()
+
+		//url.Valuesの設定を元に戻す
+		v.Set("screen_name", "imas_ml_td_t")
+		v.Set("count", "4")
 	}
 
+	//DB用意
+	db := gormcore()
+	//db.Table("datas").CreateTable(&post{})
+	defer db.Close()
+
 	//ツイートの取得
-	tweet, err := twiapi.GetUserTimeline(twiv_t)
+	tweets, err := api.GetUserTimeline(v)
 	if err != nil {
 		fmt.Printf("--couldn't get tweets---\n%v\n", err)
 		return
@@ -169,14 +283,14 @@ func tweektweets() {
 
 		//取得したツイートがtwlogに記録されてるかどうか
 		for b := 0; b < 4; b++ {
-			if tweet[a].FullText == twlog[b] {
+			if tweets[a].FullText == twlog[b] {
 				poti.m = true
 				break
 			}
 		}
 
 		//ツイートをtwlogに記録
-		twlog[3-a] = tweet[a].FullText
+		twlog[3-a] = tweets[a].FullText
 
 		//すでに記録されてたら以降の処理をスルー
 		if poti.m {
@@ -184,14 +298,16 @@ func tweektweets() {
 		}
 
 		//改行の統一、rune変換
-		tweer := []rune(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(tweet[a].FullText))
+		tweet = strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(tweets[a].FullText)
+		ru = []rune(tweet)
 
+		//RTかどうかで処理を分ける
 		//RTじゃなかったら
-		if tweet[a].RetweetedStatus == nil {
+		if tweets[a].RetweetedStatus == nil {
 			m = 0
 			kurai := 0
-			for b, z := range tweer {
-				switch z {
+			for b, w := range ru {
+				switch w {
 
 				//"位"の数を数える
 				case 20301:
@@ -215,14 +331,14 @@ func tweektweets() {
 					kig[m] = b
 					m++
 
-				//"#"の場所をもとに色々やる
+					//"#"の場所をもとに色々やる
 				case 35:
 
 					//何時のボーダーか取得
-					poti.h = tweer[b-6]*10 + tweer[b-5] - 528
+					poti.h = ru[b-6]*10 + ru[b-5] - 528
 
 					//30分ならtrue
-					if tweer[b-3] == 48 {
+					if ru[b-3] == 48 {
 						poti.m = false
 					} else {
 						poti.m = true
@@ -235,25 +351,24 @@ func tweektweets() {
 					}
 
 					//最終結果の場合はmに1を足す(m=7)
-					if tweer[b-2] == 26524 {
+					if ru[b-2] == 26524 {
 						m++
 					}
 
 					//"位"の数だけループする
 					for c := 0; c < kurai; c++ {
-						var twer []rune
 
 						//":"と"("もしくは"\n"からボーダーの数値を取得
 						if m == 7 {
-							twer = []rune(string(tweer[krn[c]+2 : kig[c]]))
+							r = []rune(string(ru[krn[c]+2 : kig[c]]))
 						} else {
-							twer = []rune(string(tweer[krn[c]+2 : kk[c]-1]))
+							r = []rune(string(ru[krn[c]+2 : kk[c]-1]))
 						}
 
 						//","を消す
-						for d, y := range twer {
-							if y == 44 {
-								twer = append(twer[:d], twer[d+1:]...)
+						for l, x := range r {
+							if x == 44 {
+								r = append(r[:l], r[l+1:]...)
 							}
 						}
 
@@ -261,17 +376,17 @@ func tweektweets() {
 						pt.Name = pri
 						switch c {
 						case 0:
-							pt.One = string(twer)
+							pt.One = string(r)
 						case 1:
-							pt.Two = string(twer)
+							pt.Two = string(r)
 						case 2:
-							pt.Three = string(twer)
+							pt.Three = string(r)
 						case 3:
-							pt.Four = string(twer)
+							pt.Four = string(r)
 						case 4:
-							pt.Five = string(twer)
+							pt.Five = string(r)
 						case 5:
-							pt.Six = string(twer)
+							pt.Six = string(r)
 						}
 						if err != nil {
 							fmt.Printf("--couldn't convert AtoI---\n%v\n", err)
@@ -296,6 +411,9 @@ func tweektweets() {
 						}
 					}
 
+					//何日のボーダーか取得
+					tweet = string(ru[b-9 : b-7])
+
 					//最終日やったら
 					if m == 7 {
 						pt.Num = twt
@@ -305,62 +423,63 @@ func tweektweets() {
 						return
 					}
 
-					//何日のボーダーか取得
-					wd := string(tweer[b-9 : b-7])
-
 					//そうじゃなかったら適切な場所に記録
-					for c, y := range dates {
-						if wd == y {
-							pt.Num = 48*c + int(poti.h) - fwt
+					for d, x := range dates {
+						if tweet == x {
+							pt.Num = 48*d + int(poti.h) - fwt
 							db.Table("datas").Save(&pt)
 						}
 					}
 				}
 			}
-
 			//RTやったら通知の処置
 		} else {
 			poti.m = true
-			tuti(tweer)
+			tuti()
 		}
 	}
+	/*
+		何か見たいものがあったらこの下に書く
+	*/
 }
 
 //記録されてるイベントのリストを作成
-func eventlist() string {
+func eventlist() (list string) {
 
 	//記録されてるイベントの情報を取得
 	pes := []period{}
+	db := gormcore()
 	db.Table("list").Select("num,name,period").Order("num desc").Where("num>2").Find(&pes)
+	db.Close()
 
 	//byte配列用意
 	var listb []byte
 
 	//listbにイベント情報を詰め込んでいく
-	for _, z := range pes {
+	for _, v := range pes {
 
 		//まずはnum
-		nnpb := []byte(z.Num)
-		for _, y := range nnpb {
-			listb = append(listb, y)
+		b := []byte(v.Num)
+		for _, w := range b {
+			listb = append(listb, w)
 		}
 
 		//"//"を追加
 		listb = append(listb, 47, 47)
 
 		//次はname
-		nnpb = []byte(z.Name)
-		for _, y := range nnpb {
-			listb = append(listb, y)
+		b = []byte(v.Name)
+		for _, w := range b {
+			listb = append(listb, w)
 		}
 
 		//"//"を追加
 		listb = append(listb, 47, 47)
 
 		//最後はperiod
-		nnpb = []byte(z.Period)
-		for _, y := range nnpb {
-			listb = append(listb, y)
+		b = []byte(v.Period)
+		for _, w := range b {
+			listb = append(listb, w)
 		}
 
 		//",,"を追加
@@ -376,7 +495,7 @@ func roulette() (src, alt string) {
 	rand.Seed(time.Now().UnixNano())
 	//０ ～ ("Intnの引数"-１) の整数
 	n := rand.Intn(1)
-	src = "/view/img/hinata" + strconv.Itoa(n) + ".gif"
+	src = "/static/img/hinata" + strconv.Itoa(n) + ".gif"
 	switch n {
 	case 0:
 		alt = "ローディング用のGIF。ラブリーフルーティアひなたがぴょんぴょん跳ねてる"
@@ -396,7 +515,10 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 	//選択したイベントをコンマ区切りで取り出す
 	se := strings.Split(ev, ",")
 
-	pts := []post{}
+	//DB用意
+	db := gormcore()
+	defer db.Close()
+	spt := []post{}
 	ls := period{}
 
 	//最終結果(達)のなかで一番でかいのを記録
@@ -406,16 +528,16 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 		//比べる用
 		comp := float64(0)
 
-		for _, z := range se {
+		for _, v := range se {
 
 			//pt初期化
 			pt = post{}
 
 			//numの最大値を取得
-			db.Table("datas").Select("max(num)as one").Where("name=?", z).Find(&pt)
+			db.Table("datas").Select("max(num)as one").Where("name=?", v).Find(&pt)
 
 			//300か348か396か
-			db.Table("list").Select("times").Where("num=?", z).Find(&ls)
+			db.Table("list").Select("times").Where("num=?", v).Find(&ls)
 			name := "1"
 			num := "348"
 			switch ls.Times {
@@ -428,11 +550,10 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 			}
 
 			//そのnumの平均と比べて最終日予想
-			db.Table("datas").Select("(select " + ra + " from datas where name=" + name + " and num=" + num + ")*((select " + ra + " from datas where name=" + z + " and num=" + pt.One + ")/(select " + ra + " from datas where name=" + name + " and num=" + pt.One + "))as two").Find(&pt)
+			db.Table("datas").Select("(select " + ra + " from datas where name=" + name + " and num=" + num + ")*((select " + ra + " from datas where name=" + v + " and num=" + pt.One + ")/(select " + ra + " from datas where name=" + name + " and num=" + pt.One + "))as two").Find(&pt)
 
 			//開催期間が396より大きいとき
 			if ls.Times > 396 {
-				/*仮*/
 				pt.Two = "6137039"
 			}
 
@@ -448,6 +569,7 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 			}
 		}
 	}
+
 	//0のままやったら平均値を設定
 	if rm == 0 {
 		db.Table("datas").Select(ra + " as one").Where("name=0 and num=348").Find(&pt)
@@ -486,45 +608,45 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 	gra := make([]byte, 0, 32768)
 
 	//イベント毎の処理
-	for a, z := range se {
+	for a, v := range se {
 
 		//記録を取得
-		db.Table("datas").Select(sel).Where("name=?", z).Order("num").Find(&pts)
+		db.Table("datas").Select(sel).Where("name=?", v).Order("num").Find(&spt)
 
 		//num初期化
 		num = -1
 
 		//イベントの記録を入れる箱
-		db.Table("list").Select("times").Where("num=?", z).Find(&ls)
+		db.Table("list").Select("times").Where("num=?", v).Find(&ls)
 		box := make([]float64, ls.Times+1)
 
 		//「M0 0 」
 		gra = append(gra, 77, 48, 32, 48, 32)
 
 		//詰め込む
-		for _, y := range pts {
+		for _, w := range spt {
 
 			//指定したイベントの指定した順位のボーダー
-			border, err := strconv.ParseFloat(y.One, 64)
+			border, err := strconv.ParseFloat(w.One, 64)
 			if err != nil {
 				fmt.Printf("--couldn't convert AtoI---\n%v\n", err)
 			}
 
 			//被ってたらDBから削除
-			if y.Num == num {
-				db.Table("datas").Where("name=? and num=?", z, num).Limit(1).Delete(&y)
+			if w.Num == num {
+				db.Table("datas").Where("name=? and num=?", v, num).Limit(1).Delete(&w)
 				continue
 			}
 
 			//記録
-			box[y.Num] = border
-			num = y.Num
+			box[w.Num] = border
+			num = w.Num
 
 			//graにデータを書き込んでいく
 			//「L」
 			gra = append(gra, 76)
 			//"w.Num"
-			gra = append(gra, []byte(strconv.FormatFloat(float64(y.Num)*2.51417108, 'f', 6, 64))...)
+			gra = append(gra, []byte(strconv.FormatFloat(float64(w.Num)*2.51417108, 'f', 6, 64))...)
 			//「 」
 			gra = append(gra, 32)
 			//"border"
@@ -552,6 +674,11 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 
 //xlsxに記録
 func backup() (ok bool) {
+
+	//db用意
+	db := gormcore()
+	//終わったら閉じる
+	defer db.Close()
 
 	//リストと記録
 	lists := []period{}
@@ -643,11 +770,13 @@ func backup() (ok bool) {
 				}
 			}
 		}
+
 		//全部揃ったらもう使わん
 		if len(datas) == list.Times {
 			db.Table("list").Where("num=?", list.Num).Update("done", 2)
 		}
 	}
+
 	//平均を計算して更新
 	for a := 0; a < 3; a++ {
 		e := 0
@@ -697,6 +826,7 @@ func backup() (ok bool) {
 			db.Table("datas").Where("name=? and num=?", pt.Name, pt.Num).Update(&pt)
 		}
 	}
+
 	//セーブ
 	if err = os.Mkdir("tmp", 0777); err != nil {
 		fmt.Printf("--couldn't make the dir---\n%v\n", err)
@@ -706,7 +836,6 @@ func backup() (ok bool) {
 		fmt.Printf("--couldn't save the file---\n%v\n", err)
 		return
 	}
-
 	return true
 }
 
@@ -742,7 +871,7 @@ func send(tion bool) (ok bool) {
 	ml.From = mail.Address{Name: from, Address: fromAdd}
 	ml.To = []string{to0}
 	if !bl {
-		if err := ml.Attach("./tmp/datas.xlsx"); err != nil {
+		if err = ml.Attach("./tmp/datas.xlsx"); err != nil {
 			fmt.Printf("--couldn't attach the file---\n%v\n", err)
 			return
 		}
@@ -761,16 +890,16 @@ func send(tion bool) (ok bool) {
 		fmt.Printf("--couldn't create a new client---\n%v\n", err)
 		return
 	}
-	if err := c.Auth(auth); err != nil {
+	if err = c.Auth(auth); err != nil {
 		fmt.Printf("--couldn't authenticate the client---\n%v\n", err)
 		return
 	}
 	//通信開始
-	if err := c.Mail(fromAdd); err != nil {
+	if err = c.Mail(fromAdd); err != nil {
 		fmt.Printf("--couldn't start send the mail---\n%v\n", err)
 		return
 	}
-	if err := c.Rcpt(to0); err != nil {
+	if err = c.Rcpt(to0); err != nil {
 		fmt.Printf("--couldn't specify the recipient---\n%v\n", err)
 		return
 	}
@@ -779,12 +908,12 @@ func send(tion bool) (ok bool) {
 		fmt.Printf("--couldn't start send the message---\n%v\n", err)
 		return
 	}
-	if _, err := wd.Write(ml.Bytes()); err != nil {
+	if _, err = wd.Write(ml.Bytes()); err != nil {
 		fmt.Printf("--couldn't send the message---\n%v\n", err)
 		return
 	}
 	//通信終了
-	if err := wd.Close(); err != nil {
+	if err = wd.Close(); err != nil {
 		fmt.Printf("--couldn't close the connection---\n%v\n", err)
 		return
 	}
@@ -797,6 +926,9 @@ func send(tion bool) (ok bool) {
 //rebuild
 func remake() (ok bool) {
 
+	//db用意
+	db := gormcore()
+
 	//ファイル開く
 	xf, err := excelize.OpenFile("datas.xlsx", excelize.Options{Password: os.Getenv("XlPassword")})
 	if err != nil {
@@ -806,10 +938,10 @@ func remake() (ok bool) {
 
 	//トランザクション開始
 	tx := db.Begin()
-	err = func() error {
+	err = func(dbt *gorm.DB) error {
 
 		//datas空
-		if err := tx.Exec("truncate table datas").Error; err != nil {
+		if err = dbt.Exec("truncate table datas").Error; err != nil {
 			fmt.Printf("--couldn't truncate the table---\n%v\n", err)
 			return err
 		}
@@ -894,7 +1026,7 @@ func remake() (ok bool) {
 					}
 
 					// insert
-					if err = tx.Table("datas").Save(&pt).Error; err != nil {
+					if err = dbt.Table("datas").Save(&pt).Error; err != nil {
 						fmt.Printf("--couldn't save the date---\n%v\n", err)
 						return err
 					}
@@ -902,7 +1034,7 @@ func remake() (ok bool) {
 			}
 		}
 		return nil
-	}()
+	}(tx)
 
 	//虎終了和閉扉
 	defer func() {
@@ -912,6 +1044,283 @@ func remake() (ok bool) {
 			tx.Rollback()
 			ok = false
 		}
+		db.Close()
 	}()
 	return true
+}
+
+//管理する感じのやつ
+func control(c *gin.Context) (ajax interface{}) {
+	db := gormcore()
+	defer db.Close()
+	switch c.PostForm("f") {
+
+	//tables取得
+	case "0":
+		tables, err := db.Raw("show tables").Rows()
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer tables.Close()
+		tbr := make([]rune, 0, 5)
+		table := ""
+		for tables.Next() {
+			tables.Scan(&table)
+			tbr = append(tbr, []rune(table)...)
+			tbr = append(tbr, 44, 32)
+		}
+		return string(tbr)
+
+		//records取得
+	case "1":
+		rcsb := make([]byte, 0, 32768)
+		rcsb = append(rcsb, 227, 131, 172, 227, 130, 179, 227, 131, 188, 227, 131, 137, 230, 149, 176, 58, 32)
+		s := c.PostForm("s")
+		w := c.PostForm("w")
+		if s == "" {
+			s = "*"
+		}
+		if w != "" {
+			w = " where " + w
+		}
+		n := c.PostForm("n")
+		switch n {
+
+		//from datas
+		case "datas":
+			rcs := []post{}
+			db.Raw("select " + s + " from datas" + w).Scan(&rcs)
+			rcsb = append(rcsb, []byte(strconv.Itoa(len(rcs)))...)
+			rcsb = append(rcsb, 10, 110, 97, 109, 101, 44, 32, 110, 117, 109, 44, 32, 111, 110, 101, 44, 32, 116, 119, 111, 44, 32, 116, 104, 114, 101, 101, 44, 32, 102, 111, 117, 114, 44, 32, 102, 105, 118, 101, 44, 32, 115, 105, 120, 10)
+			for _, v := range rcs {
+				rcsb = append(rcsb, 10)
+				rcsb = append(rcsb, []byte(v.Name)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(strconv.Itoa(v.Num))...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.One)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Two)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Three)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Four)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Five)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Six)...)
+			}
+			return string(rcsb)
+
+		//from list
+		case "list":
+			rcs := []period{}
+			db.Raw("select " + s + " from list" + w).Scan(&rcs)
+			rcsb = append(rcsb, []byte(strconv.Itoa(len(rcs)))...)
+			rcsb = append(rcsb, 10, 110, 117, 109, 44, 32, 110, 97, 109, 101, 44, 32, 112, 101, 114, 105, 111, 100, 44, 32, 116, 105, 109, 101, 115, 44, 32, 100, 111, 110, 101, 10)
+			for _, v := range rcs {
+				rcsb = append(rcsb, 10)
+				rcsb = append(rcsb, []byte(v.Num)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Name)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(v.Period)...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(strconv.Itoa(v.Times))...)
+				rcsb = append(rcsb, 44)
+				rcsb = append(rcsb, []byte(strconv.Itoa(v.Done))...)
+			}
+			return string(rcsb)
+		}
+
+		//記録記録
+	case "2":
+		if backup() {
+			if !send(true) {
+				fmt.Println("send failed")
+			}
+		} else {
+			fmt.Println("backup failed")
+		}
+
+		//手動取得
+	case "3":
+		api, v := setconf()
+		gettweets(api, v)
+
+		//リボーン
+	case "4":
+		bl = true
+		fmt.Println("rebuilding...")
+		if !remake() {
+			if !send(true) {
+				fmt.Println("send failed")
+			}
+			break
+		}
+		bl = false
+		fmt.Println("success!")
+
+		//けすのめんｄ
+	case "5":
+		//
+
+		//caseを追加するときに分かりやすいように置いとく
+	default:
+		/*なし*/
+	}
+	return
+}
+
+func Run() {
+	//現在時刻
+	now := time.Now().Add(9 * time.Hour)
+
+	if os.Getenv("PORT") == "" {
+		if err = godotenv.Load("dev.env"); err != nil {
+			fmt.Printf("--couldn't load env---\n%v\n", err)
+		}
+	}
+
+	//ツイート取得の準備
+	api, v := setconf()
+
+	//master
+	mas := os.Getenv("Master")
+
+	//サーバーの準備
+	r := gin.Default()
+	r.LoadHTMLGlob("view/*.html")
+	r.Static("/static", "./view/static")
+
+	//トップ
+	r.GET("/", func(c *gin.Context) {
+		src, alt := roulette()
+		c.HTML(http.StatusOK, "top.html", gin.H{"src": src, "alt": alt})
+	})
+
+	//HEADリクエスト
+	r.HEAD("/")
+
+	//いらん
+	r.GET("room/:name", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "room.html", gin.H{"Name": c.Param("name")})
+	})
+
+	//イベントページ
+	r.GET("events", func(c *gin.Context) {
+		src, alt := roulette()
+
+		if bl {
+			//DB再構築中
+			c.HTML(http.StatusOK, "room.html", gin.H{"Name": "メンテ中"})
+		}
+
+		c.HTML(http.StatusOK, "events.html", gin.H{"src": src, "alt": alt, "list": eventlist()})
+	})
+
+	//選択したイベントの情報
+	r.POST("event", func(c *gin.Context) {
+		sc, ele := graphinfo(c.PostForm("events"), c.PostForm("rank"), c.PostForm("height"))
+		c.HTML(http.StatusOK, "event.html", gin.H{"selected": ele, "scale": sc})
+	})
+
+	//イベントポイント計算
+	r.GET("calc1", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "calc1.html", gin.H{})
+	})
+
+	//仮実装
+	r.GET("calc1/kari", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "calc0.9.html", gin.H{})
+	})
+
+	//○○計算
+	r.GET("calc2", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "calc2.html", gin.H{})
+	})
+
+	//いらん
+	r.GET("tweet", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "ajax.html", gin.H{"tweet": 0, "coord": "M0 0 L75 150 L150 0"})
+	})
+
+	//管理
+	r.GET(mas, func(c *gin.Context) {
+		c.HTML(http.StatusOK, "care.html", gin.H{"time": now.Format("2006/01/02 15:04:05")})
+	})
+
+	//管理ajax
+	r.POST("careajax", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "careajax.html", gin.H{"ajax": control(c)})
+	})
+
+	/*
+		//download
+		//今は使わんけどそのうち使うときのために残しとく
+		r.GET("download/datas", func(c *gin.Context) {
+			c.Writer.Header().Add("Content-Disposition", "attachment; filename=datas.xlsx")
+			c.Writer.Header().Add("Content-Type", "application/octet-stream")
+			c.File("datas.xlsx")
+		})
+	*/
+
+	//30分毎にツイートの取得
+	go func() {
+		var (
+			//1800000...30min
+			//10000...10s
+			wait, gap int = 1800000, 0
+			wt        time.Duration
+			start     time.Time
+		)
+
+		//開始時に一回やっとく
+		gettweets(api, v)
+
+		//一日やったらバックアップ作成
+		if now.Day() == 1 {
+			if backup() {
+				if !send(false) {
+					fmt.Println("send failed")
+				}
+			} else {
+				fmt.Println("backup failed")
+			}
+		}
+
+		g := []byte(time.Now().Format("05.0")[3:4])[0]
+		if g < 53 {
+			g += 5
+		} else {
+			g -= 5
+		}
+		for {
+			start = time.Now()
+			wt = time.Duration(wait-gap) * 1000000
+			time.Sleep(wt)
+			gettweets(api, v)
+			//gapが大きいとsleepの時間はマイナス(0秒)になるけど、gapの値が正常になるまで0秒待つのが続くから、gapの値を正常にする処理が必要
+			//とりあえずこんな感じにしとく
+			if m == 11 {
+				continue
+			}
+			if []byte(start.Format("05.0")[3:4])[0] == g {
+				gap += 500
+			}
+			gap = int(time.Since(start))/1000000 - wait + gap
+		}
+	}()
+
+	/*エラーが出たらサーバーが止まるからしっかり対策する*/
+	/*
+		投稿に25,000とか50,000位の記録がない場合がある
+		「":"と"("もしくは"\n"からボーダーの数値を取得」のところでエラー
+		ミスじゃなくて、単純に50000位まで人がおらんのが原因
+	*/
+
+	r.Run(":" + os.Getenv("PORT"))
+	/*
+		cmdで「set PORT=○○○○」を実行後に「http://localhost:○○○○/」にアクセスする
+	*/
 }

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"internal/organs"
+	"ts"
 )
 
 func main() {
-	organs.Run()
+	ts.Run()
 }
