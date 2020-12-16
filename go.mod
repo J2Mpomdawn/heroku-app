@@ -13,7 +13,5 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/jinzhu/gorm v1.9.16
 	github.com/joho/godotenv v1.3.0
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/scorredoira/email v0.0.0-20191107070024-dc7b732c55da
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
