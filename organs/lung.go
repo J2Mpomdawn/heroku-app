@@ -2,6 +2,7 @@ package organs
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/mail"
@@ -12,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/scorredoira/email"
 )
 
@@ -551,7 +551,10 @@ func graphinfo(ev, ra, he string) (sc int, ele string) {
 }
 
 //xlsxに記録
-func backup() (ok bool) {
+//これはなし
+
+/*
+func backupp() (ok bool) {
 
 	//リストと記録
 	lists := []period{}
@@ -610,7 +613,7 @@ func backup() (ok bool) {
 		}
 
 		//記録を取得して適当なマスに記録
-		/*2秒待ってみる*/
+		//2秒待ってみる
 		time.Sleep(2 * time.Second)
 		db.Raw("select*from(select*from datas where name=? order by num)as A group by num", list.Num).Scan(&datas)
 
@@ -709,11 +712,195 @@ func backup() (ok bool) {
 
 	return true
 }
+*/
+
+//jsonに記録
+func backup() (ok bool) {
+	//リスト
+	lists := []period{}
+	//取得
+	db.Raw("select distinct * from list order by num").Scan(&lists)
+
+	//tmpディレクトリ生成
+	if _, err = os.Stat("tmp"); os.IsNotExist(err) {
+		if err = os.Mkdir("tmp", 0777); err != nil {
+			fmt.Printf("--couldn't make the dir---\n%v\n", err)
+			return
+		}
+	}
+
+	//リストjsonファイル生成
+	f, err := os.Create("./tmp/list.json")
+	if err != nil {
+		fmt.Printf("--couldn't make list json---\n%v\n", err)
+	}
+	//記述
+	if err = json.NewEncoder(f).Encode(lists); err != nil {
+		fmt.Printf("--couldn't save list json---\n%v\n", err)
+	}
+
+	defer f.Close()
+
+	//記録
+	//postの数値版を定義
+	postInt := []struct {
+		Name                             int `gorm:"type:smallint unsigned"`
+		Num                              int `gorm:"type:smallint unsigned"`
+		One, Two, Three, Four, Five, Six int `gorm:"type:mediumint unsigned"`
+	}{}
+	//取得
+	db.Raw("select distinct * from datas order by name, num").Scan(&postInt)
+
+	//json用構造体に詰め替え
+	jpos := []jpost{}
+	//イベント番号を一時的に記憶
+	nume := -1
+	for _, v := range postInt {
+		//イベントが変わったら
+		if nume != v.Name {
+			//イベント追加
+			jpos = append(jpos, jpost{})
+			jpos[len(jpos)-1].Name = v.Name
+			nume = v.Name
+		}
+		//投稿時間とデータ記録
+		datas := &jpos[len(jpos)-1].Datas
+		*datas = append(*datas, postDatas{v.Num, v.One, v.Two, v.Three, v.Four, v.Five, v.Six})
+	}
+
+	//0, 1, 2 に平均を記録
+	//0, 1, 2 以外のイベント番号を記録
+	//key:eventNumber, value:times
+	avgTarget := map[int]int{}
+	for _, v := range lists {
+		if nume, err = strconv.Atoi(v.Num); err != nil {
+			//error
+			continue
+		}
+		if nume < 3 {
+			continue
+		}
+		avgTarget[nume] = v.Times
+	}
+
+	//平均を計算して入力
+	//0, 1, 2の各時間の合計を入れる箱とイベントの数を数える変数
+	small, smalln := make([]postDatas, 300), 0
+	medium, mediumn := make([]postDatas, 348), 0
+	large, largen := make([]postDatas, 396), 0
+	oneTwoThree := [3]int{-1, -1, -1}
+	for i, v := range jpos {
+		//0, 1, 2 があったら場所を記録しとく
+		if v.Name < 3 {
+			oneTwoThree[v.Name] = i
+		}
+
+		//どの箱を使うか
+		var pd *[]postDatas
+		switch avgTarget[v.Name] {
+		case 300:
+			smalln++
+			pd = &small
+		case 348:
+			mediumn++
+			pd = &medium
+		case 396:
+			largen++
+			pd = &large
+		default:
+			continue
+		}
+		//足し算
+		for _, vv := range v.Datas {
+			(*pd)[vv.Num-1].One += vv.One
+			(*pd)[vv.Num-1].Two += vv.Two
+			(*pd)[vv.Num-1].Three += vv.Three
+			(*pd)[vv.Num-1].Four += vv.Four
+			(*pd)[vv.Num-1].Five += vv.Five
+			(*pd)[vv.Num-1].Six += vv.Six
+		}
+	}
+	//割り算
+	for i := 0; i < 396; i++ {
+		large[i].Num = i + 1
+		if largen != 0 {
+			large[i].One /= largen
+			large[i].Two /= largen
+			large[i].Three /= largen
+			large[i].Four /= largen
+			large[i].Five /= largen
+			large[i].Six /= largen
+		}
+		if i < 348 {
+			medium[i].Num = i + 1
+			if mediumn != 0 {
+				medium[i].One /= mediumn
+				medium[i].Two /= mediumn
+				medium[i].Three /= mediumn
+				medium[i].Four /= mediumn
+				medium[i].Five /= mediumn
+				medium[i].Six /= mediumn
+			}
+		}
+		if i < 300 {
+			small[i].Num = i + 1
+			if smalln != 0 {
+				small[i].One /= smalln
+				small[i].Two /= smalln
+				small[i].Three /= smalln
+				small[i].Four /= smalln
+				small[i].Five /= smalln
+				small[i].Six /= smalln
+			}
+		}
+	}
+
+	//-1 やったら上書き
+	//それ以外は先頭に追加
+	oTT := 0
+	if oneTwoThree[2] != -1 {
+		jpos[oneTwoThree[2]].Datas = large
+	} else {
+		jpos = append(jpos, jpost{})
+		copy(jpos[1:], jpos)
+		jpos[0].Name = 2
+		jpos[0].Datas = large
+		oTT++
+	}
+	if oneTwoThree[1] != -1 {
+		jpos[oneTwoThree[1]+oTT].Datas = medium
+	} else {
+		jpos = append(jpos, jpost{})
+		copy(jpos[1:], jpos)
+		jpos[0].Name = 1
+		jpos[0].Datas = medium
+		oTT++
+	}
+	if oneTwoThree[0] != -1 {
+		jpos[oneTwoThree[0]+oTT].Datas = small
+	} else {
+		jpos = append(jpos, jpost{})
+		copy(jpos[1:], jpos)
+		jpos[0].Name = 0
+		jpos[0].Datas = small
+	}
+
+	//データjsonファイル生成
+	f, err = os.Create("./tmp/datas.json")
+	if err != nil {
+		fmt.Printf("--couldn't make datas json---\n%v\n", err)
+	}
+	//記述
+	if err = json.NewEncoder(f).Encode(jpos); err != nil {
+		fmt.Printf("--couldn't save datas json---\n%v\n", err)
+	}
+
+	return true
+}
 
 //メール送信
 func send(tion bool) (ok bool) {
-
-	//sub,body,from,to,server等設定
+	//sub, body, from, to, server作成
 	subject := time.Now().Format("2006/1/2")
 	body := func(opera bool) (style string) {
 		if opera {
@@ -741,53 +928,85 @@ func send(tion bool) (ok bool) {
 	ml := email.NewMessage(subject, body)
 	ml.From = mail.Address{Name: from, Address: fromAdd}
 	ml.To = []string{to0}
+	//ファイル添付
 	if !bl {
-		if err := ml.Attach("./tmp/datas.xlsx"); err != nil {
-			fmt.Printf("--couldn't attach the file---\n%v\n", err)
+		if err = ml.Attach("./tmp/list.json"); err != nil {
+			fmt.Printf("--couldn't attach the list file---\n%v\n", err)
+			return
+		}
+		if err = ml.Attach("./tmp/datas.json"); err != nil {
+			fmt.Printf("--couldn't attach the datas file---\n%v\n", err)
 			return
 		}
 	}
 
 	//通信準備
+	/*Simple Mail Transfer Protocol
+	***プロトコルはルールみたいなもん
+	****ルールを統一せな通信できへん
+	****Ja -/> En, Ja </- En ) => むり
+	****Ja -/> Ja, Ja </- Ja ) => できる
+	**				  SMTPの流れ
+	***			client	   |	server
+	***--------------------|----------------
+	***				HELO ->|<- 250
+	***		  MAIL FROM: ->|<- 250
+	***RCPT TO:(n times) ->|<- 250(n times)
+	***				DATA ->|<- 354
+	***			 message ->|
+	***	   <CRLF>.<CRLF> ->|<- 250
+	***				QUIT ->|<- 221
+	 */
 	auth := smtp.PlainAuth("", fromAdd, pass, host)
+	//Transport Layer Security
+	//安全な通信ができるようにする
 	tlsconfig := &tls.Config{InsecureSkipVerify: true, ServerName: host}
+	//Transmission Control Protocol
+	///正確に届いたか確認しながらやりとりする
 	conn, err := tls.Dial("tcp", servername, tlsconfig)
 	if err != nil {
 		fmt.Printf("--couldn't tls connection---\n%v\n", err)
 		return
 	}
+	//clientを用意
 	c, err := smtp.NewClient(conn, host)
 	if err != nil {
 		fmt.Printf("--couldn't create a new client---\n%v\n", err)
 		return
 	}
-	if err := c.Auth(auth); err != nil {
+	//通信開始
+	//HELO
+	if err = c.Auth(auth); err != nil {
 		fmt.Printf("--couldn't authenticate the client---\n%v\n", err)
 		return
 	}
-	//通信開始
-	if err := c.Mail(fromAdd); err != nil {
+	//FROM
+	if err = c.Mail(fromAdd); err != nil {
 		fmt.Printf("--couldn't start send the mail---\n%v\n", err)
 		return
 	}
-	if err := c.Rcpt(to0); err != nil {
+	//TO
+	if err = c.Rcpt(to0); err != nil {
 		fmt.Printf("--couldn't specify the recipient---\n%v\n", err)
 		return
 	}
+	//DATA
 	wd, err := c.Data()
 	if err != nil {
 		fmt.Printf("--couldn't start send the message---\n%v\n", err)
 		return
 	}
-	if _, err := wd.Write(ml.Bytes()); err != nil {
+	//Message
+	if _, err = wd.Write(ml.Bytes()); err != nil {
 		fmt.Printf("--couldn't send the message---\n%v\n", err)
 		return
 	}
-	//通信終了
-	if err := wd.Close(); err != nil {
+	//Message end
+	if err = wd.Close(); err != nil {
 		fmt.Printf("--couldn't close the connection---\n%v\n", err)
 		return
 	}
+	//通信終了
 	c.Quit()
 
 	fmt.Println("ok")
@@ -795,6 +1014,8 @@ func send(tion bool) (ok bool) {
 }
 
 //rebuild
+
+/*
 func remake() (ok bool) {
 
 	//ファイル開く
@@ -913,5 +1134,91 @@ func remake() (ok bool) {
 			ok = false
 		}
 	}()
+	return true
+}
+*/
+
+//再構成
+func remake() (ok bool) {
+
+	//トランザクション開始
+	tx := db.Begin()
+	err = func() error {
+
+		//リストリセット
+		if err := tx.Exec("truncate table list").Error; err != nil {
+			fmt.Printf("--couldn't truncate the table---\n%v\n", err)
+			return err
+		}
+
+		//リストjsonファイル開く
+		f, err := os.Open("./tmp/list.json")
+		if err != nil {
+			fmt.Printf("--couldn't open list json---\n%v\n", err)
+		}
+
+		//リスト用配列
+		lists := []period{}
+
+		//jsonを配列に写す
+		if err = json.NewDecoder(f).Decode(&lists); err != nil {
+			fmt.Printf("--couldn't read list json---\n%v\n", err)
+		}
+
+		//挿入
+		for _, v := range lists {
+			if err = tx.Table("list").Save(v).Error; err != nil {
+				fmt.Printf("--couldn't insert the list---\n%v\n", err)
+				return err
+			}
+		}
+
+		//データjsonファイル開く
+		f, err = os.Open("./tmp/datas.json")
+		if err != nil {
+			fmt.Printf("--couldn't open datas json--- \n%v\n", err)
+		}
+
+		//jsonデータ用配列
+		jdatas := []jpost{}
+
+		//jsonを配列に写す
+		if err = json.NewDecoder(f).Decode(&jdatas); err != nil {
+			fmt.Printf("--couldn't read datas json---\n%v\n", err)
+		}
+
+		//dbデータ用配列
+		datas := []post{}
+
+		//json配列の要素をdb配列に写す
+		for _, v := range jdatas {
+			for _, w := range v.Datas {
+				datas = append(datas, post{strconv.Itoa(v.Name), w.Num, strconv.Itoa(w.One), strconv.Itoa(w.Two), strconv.Itoa(w.Three), strconv.Itoa(w.Four), strconv.Itoa(w.Five), strconv.Itoa(w.Six)})
+			}
+		}
+
+		//挿入
+		for _, v := range datas {
+			if err = tx.Table("datas").Save(v).Error; err != nil {
+				fmt.Printf("--couldn't insert the data---\n%v\n", err)
+				return err
+			}
+		}
+
+		defer f.Close()
+
+		return nil
+	}()
+
+	//トランザクション終了
+	defer func() {
+		if err == nil {
+			tx.Commit()
+		} else {
+			tx.Rollback()
+			ok = false
+		}
+	}()
+
 	return true
 }

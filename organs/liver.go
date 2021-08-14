@@ -24,18 +24,33 @@ type post struct {
 	One, Two, Three, Four, Five, Six string `gorm:"type:mediumint unsigned"`
 }
 
+type postDatas struct {
+	Num   int `json:"num"`
+	One   int `json:"one"`
+	Two   int `json:"two"`
+	Three int `json:"three"`
+	Four  int `json:"four"`
+	Five  int `json:"five"`
+	Six   int `json:"six"`
+}
+
+type jpost struct {
+	Name  int         `json:"name"`
+	Datas []postDatas `json:"datas"`
+}
+
 type period struct {
 	//番号
-	Num string `gorm:"type:smallint unsigned PRIMARY KEY"`
+	Num string `gorm:"type:smallint unsigned PRIMARY KEY" json:"num"`
 	//name...イベント名
-	Name string `gorm:"type:varchar(60)"`
+	Name string `gorm:"type:varchar(60)" json:"name"`
 	//period...開催期間
-	Period string `gorm:"type:char(21)"`
+	Period string `gorm:"type:char(21)" json:"period"`
 	//times...データの数
-	Times int `gorm:"type:smallint unsigned"`
+	Times int `gorm:"type:smallint unsigned" json:"times"`
 	//done...整理状況
 	//0:未使用, 1:記録済(不足), 2:記録済(充足)
-	Done int `gorm:"type:tinyint default 0"`
+	Done int `gorm:"type:tinyint default 0" json:"done"`
 }
 
 var (
